@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{64732E9C-9931-499E-BDE4-79CBFFF0D60A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SevenZip</RootNamespace>
+    <AssemblyName>SevenZip</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Buffer\InBuffer.cs" />
+    <Compile Include="Buffer\OutBuffer.cs" />
+    <Compile Include="CDoubleStream.cs" />
+    <Compile Include="CoderPropID.cs" />
+    <Compile Include="CommandLineParser\CommandForm.cs" />
+    <Compile Include="CommandLineParser\CommandSubCharsSet.cs" />
+    <Compile Include="CommandLineParser\Parser.cs" />
+    <Compile Include="CommandLineParser\SwitchForm.cs" />
+    <Compile Include="CommandLineParser\SwitchResult.cs" />
+    <Compile Include="CommandLineParser\SwitchType.cs" />
+    <Compile Include="Compression\LZMA\Base.cs" />
+    <Compile Include="Compression\LZMA\Decoder.cs" />
+    <Compile Include="Compression\LZMA\Encoder.cs" />
+    <Compile Include="Compression\LZ\BinTree.cs" />
+    <Compile Include="Compression\LZ\IInWindowStream.cs" />
+    <Compile Include="Compression\LZ\IMatchFinder.cs" />
+    <Compile Include="Compression\LZ\InWindow.cs" />
+    <Compile Include="Compression\LZ\OutWindow.cs" />
+    <Compile Include="Compression\RangeCoder\BitDecoder.cs" />
+    <Compile Include="Compression\RangeCoder\BitEncoder.cs" />
+    <Compile Include="Compression\RangeCoder\BitTreeDecoder.cs" />
+    <Compile Include="Compression\RangeCoder\BitTreeEncoder.cs" />
+    <Compile Include="Compression\RangeCoder\Decoder.cs" />
+    <Compile Include="Compression\RangeCoder\Encoder.cs" />
+    <Compile Include="CRC.cs" />
+    <Compile Include="DataErrorException.cs" />
+    <Compile Include="ICodeProgress.cs" />
+    <Compile Include="ICoder.cs" />
+    <Compile Include="InvalidParamException.cs" />
+    <Compile Include="ISetCoderProperties.cs" />
+    <Compile Include="ISetDecoderProperties.cs" />
+    <Compile Include="IWriteCoderProperties.cs" />
+    <Compile Include="LzmaAlone.cs" />
+    <Compile Include="LzmaBench.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+</Project>
