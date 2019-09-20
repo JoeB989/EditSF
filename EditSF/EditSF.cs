@@ -16,88 +16,88 @@ namespace EditSF
 
         private MenuStrip menuStrip1;
 
-        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem _fileToolStripMenuItem; // File菜单
 
-        private ToolStripMenuItem openToolStripMenuItem;
+        private ToolStripMenuItem _openToolStripMenuItem; // File-Open选项
 
-        private ToolStripMenuItem saveAsToolStripMenuItem;
+        private ToolStripMenuItem _saveToolStripMenuItem; // File-Save选项
 
-        private ToolStripMenuItem bookmarksToolStripMenuItem;
+        private ToolStripMenuItem _saveAsToolStripMenuItem; // File-SaveAs选项
 
-        private ToolStripMenuItem optionsToolStripMenuItem;
+        private ToolStripMenuItem _exitToolStripMenuItem; // File-Exit选项
 
-        private ToolStripMenuItem writeLogFileToolStripMenuItem;
+        private ToolStripMenuItem _bookmarksToolStripMenuItem; // Bookmarks菜单
 
-        private ToolStripMenuItem testToolStripMenuItem;
+        private ToolStripMenuItem _addBookmarkToolStripMenuItem; // Bookmarks-AddBookmark选项
 
-        private ToolStripMenuItem runTestsStripMenuItem;
+        private ToolStripMenuItem _editBookmarkToolStripMenuItem; // Bookmarks-EditBookmark选项
 
-        private ToolStripMenuItem runSingleTestToolStripMenuItem;
+        private ToolStripSeparator _bookmarkSeparator; // Bookmarks-分隔线
 
-        private ToolStripSeparator bookmarkSeparator;
+        private ToolStripMenuItem _optionsToolStripMenuItem; // Options菜单
 
-        private StatusStrip statusBar;
+        private ToolStripMenuItem _writeLogFileToolStripMenuItem; // Options-WriteLogFile选项
 
-        private ToolStripProgressBar progressBar;
+        private ToolStripMenuItem _showNodeTypeToolStripMenuItem; // Options-ShowNodeType选项
 
-        private ToolStripStatusLabel statusLabel;
+        private ToolStripMenuItem _helpToolStripMenuItem; //  Help菜单
 
-        private ToolStripMenuItem saveToolStripMenuItem;
+        private ToolStripMenuItem _aboutToolStripMenuItem; //  Help-About菜单
 
-        private ToolStripMenuItem helpToolStripMenuItem;
+        private ToolStripMenuItem _testToolStripMenuItem;
 
-        private ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem _runTestsStripMenuItem;
 
-        private ToolStripMenuItem exitToolStripMenuItem;
+        private ToolStripMenuItem _runSingleTestToolStripMenuItem;
 
-        private ToolStripMenuItem addBookmarkToolStripMenuItem;
+        private StatusStrip _statusBar;
 
-        private ToolStripMenuItem editBookmarkToolStripMenuItem;
+        private ToolStripProgressBar _progressBar;
 
-        private ToolStripMenuItem showNodeTypeToolStripMenuItem;
+        private ToolStripStatusLabel _statusLabel;
 
-        private EditEsfComponent editEsfComponent;
+        private EditEsfComponent _editEsfComponent;
 
         private ProgressUpdater updater;
 
         public static string FILENAME = "testfiles.txt";
 
-        private string filename;
+        private string _filename;
 
-        private EsfFile file;
+        private EsfFile _file;
 
-        private List<string> bookmarks = new List<string>();
+        private List<string> bookmarks = new List<string>(); // 书签名列表
 
-        private Dictionary<string, string> bookmarkToPath = new Dictionary<string, string>();
+        private Dictionary<string, string> bookmarkToPath = new Dictionary<string, string>(); // 书签路径字典
 
-        private static string BOOKMARKS_FILE_NAME = "bookmarks.txt";
+        private static string BOOKMARKS_FILE_NAME = "bookmarks.txt"; // 书签名称
+
+        private string BookmarkPath => Path.Combine(Application.UserAppDataPath, BOOKMARKS_FILE_NAME); // 书签路径
 
         public string FileName
         {
-            get { return filename; }
+            get { return _filename; }
             set
             {
                 Text = $"{Path.GetFileName(value)} - EditSF {Application.ProductVersion}";
-                statusLabel.Text = value;
-                filename = value;
+                _statusLabel.Text = value;
+                _filename = value;
             }
         }
 
         private EsfFile EditedFile
         {
-            get { return file; }
+            get { return _file; }
             set
             {
-                file = value;
-                editEsfComponent.RootNode = value.RootNode;
-                editEsfComponent.RootNode.Modified = false;
-                saveAsToolStripMenuItem.Enabled = (file != null);
-                saveToolStripMenuItem.Enabled = (file != null);
-                showNodeTypeToolStripMenuItem.Enabled = (file != null);
+                _file = value;
+                _editEsfComponent.RootNode = value.RootNode;
+                _editEsfComponent.RootNode.Modified = false;
+                _saveAsToolStripMenuItem.Enabled = (_file != null);
+                _saveToolStripMenuItem.Enabled = (_file != null);
+                _showNodeTypeToolStripMenuItem.Enabled = (_file != null);
             }
         }
-
-        private string BookmarkPath => Path.Combine(Application.UserAppDataPath, BOOKMARKS_FILE_NAME);
 
         protected override void Dispose(bool disposing)
         {
@@ -112,171 +112,171 @@ namespace EditSF
         private void InitializeComponent()
         {
             menuStrip1 = new System.Windows.Forms.MenuStrip();
-            fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            bookmarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            writeLogFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            showNodeTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            addBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            editBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            bookmarkSeparator = new System.Windows.Forms.ToolStripSeparator();
-            testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            runSingleTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            runTestsStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            statusBar = new System.Windows.Forms.StatusStrip();
-            progressBar = new System.Windows.Forms.ToolStripProgressBar();
-            statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            editEsfComponent = new EsfControl.EditEsfComponent();
+            _fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _bookmarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _writeLogFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _showNodeTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _addBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _editBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _bookmarkSeparator = new System.Windows.Forms.ToolStripSeparator();
+            _testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _runSingleTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _runTestsStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            _statusBar = new System.Windows.Forms.StatusStrip();
+            _progressBar = new System.Windows.Forms.ToolStripProgressBar();
+            _statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            _editEsfComponent = new EsfControl.EditEsfComponent();
             menuStrip1.SuspendLayout();
-            statusBar.SuspendLayout();
+            _statusBar.SuspendLayout();
             SuspendLayout();
             menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[5]
             {
-                fileToolStripMenuItem,
-                bookmarksToolStripMenuItem,
-                optionsToolStripMenuItem,
-                testToolStripMenuItem,
-                helpToolStripMenuItem
+                _fileToolStripMenuItem,
+                _bookmarksToolStripMenuItem,
+                _optionsToolStripMenuItem,
+                _testToolStripMenuItem,
+                _helpToolStripMenuItem
             });
             menuStrip1.Location = new System.Drawing.Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new System.Drawing.Size(789, 24);
             menuStrip1.TabIndex = 1;
             menuStrip1.Text = "menuStrip1";
-            fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[4]
+            _fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[4]
             {
-                openToolStripMenuItem,
-                saveToolStripMenuItem,
-                saveAsToolStripMenuItem,
-                exitToolStripMenuItem
+                _openToolStripMenuItem,
+                _saveToolStripMenuItem,
+                _saveAsToolStripMenuItem,
+                _exitToolStripMenuItem
             });
-            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            fileToolStripMenuItem.Text = "File";
-            openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
-            openToolStripMenuItem.Text = "Open";
-            openToolStripMenuItem.Click += new System.EventHandler(openToolStripMenuItem_Click);
-            saveToolStripMenuItem.Enabled = false;
-            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
-            saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem1_Click);
-            saveAsToolStripMenuItem.Enabled = false;
-            saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            saveAsToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
-            saveAsToolStripMenuItem.Text = "Save As...";
-            saveAsToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem_Click);
-            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
-            exitToolStripMenuItem.Text = "Exit";
-            exitToolStripMenuItem.Click += new System.EventHandler(exitToolStripMenuItem_Click);
-            bookmarksToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[3]
+            _fileToolStripMenuItem.Name = "_fileToolStripMenuItem";
+            _fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            _fileToolStripMenuItem.Text = "File";
+            _openToolStripMenuItem.Name = "_openToolStripMenuItem";
+            _openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _openToolStripMenuItem.Text = "Open";
+            _openToolStripMenuItem.Click += new System.EventHandler(openToolStripMenuItem_Click);
+            _saveToolStripMenuItem.Enabled = false;
+            _saveToolStripMenuItem.Name = "_saveToolStripMenuItem";
+            _saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _saveToolStripMenuItem.Text = "Save";
+            _saveToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem1_Click);
+            _saveAsToolStripMenuItem.Enabled = false;
+            _saveAsToolStripMenuItem.Name = "_saveAsToolStripMenuItem";
+            _saveAsToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _saveAsToolStripMenuItem.Text = "Save As...";
+            _saveAsToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem_Click);
+            _exitToolStripMenuItem.Name = "_exitToolStripMenuItem";
+            _exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _exitToolStripMenuItem.Text = "Exit";
+            _exitToolStripMenuItem.Click += new System.EventHandler(exitToolStripMenuItem_Click);
+            _bookmarksToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[3]
             {
-                addBookmarkToolStripMenuItem,
-                editBookmarkToolStripMenuItem,
-                bookmarkSeparator
+                _addBookmarkToolStripMenuItem,
+                _editBookmarkToolStripMenuItem,
+                _bookmarkSeparator
             });
-            bookmarksToolStripMenuItem.Name = "bookmarksToolStripMenuItem";
-            bookmarksToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            bookmarksToolStripMenuItem.Text = "Bookmarks";
-            addBookmarkToolStripMenuItem.Enabled = false;
-            addBookmarkToolStripMenuItem.Name = "addBookmarkToolStripMenuItem";
-            addBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            addBookmarkToolStripMenuItem.Text = "Add Bookmark";
-            addBookmarkToolStripMenuItem.Click += new System.EventHandler(AddBookmark);
-            editBookmarkToolStripMenuItem.Enabled = true;
-            editBookmarkToolStripMenuItem.Name = "editBookmarkToolStripMenuItem";
-            editBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            editBookmarkToolStripMenuItem.Text = "Edit Bookmarks";
-            editBookmarkToolStripMenuItem.Click += new System.EventHandler(EditBookmarks);
-            optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _bookmarksToolStripMenuItem.Name = "_bookmarksToolStripMenuItem";
+            _bookmarksToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            _bookmarksToolStripMenuItem.Text = "Bookmarks";
+            _addBookmarkToolStripMenuItem.Enabled = false;
+            _addBookmarkToolStripMenuItem.Name = "_addBookmarkToolStripMenuItem";
+            _addBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _addBookmarkToolStripMenuItem.Text = "Add Bookmark";
+            _addBookmarkToolStripMenuItem.Click += new System.EventHandler(AddBookmark_Click);
+            _editBookmarkToolStripMenuItem.Enabled = true;
+            _editBookmarkToolStripMenuItem.Name = "_editBookmarkToolStripMenuItem";
+            _editBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _editBookmarkToolStripMenuItem.Text = "Edit Bookmarks";
+            _editBookmarkToolStripMenuItem.Click += new System.EventHandler(EditBookmarks_Click);
+            _optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
             {
-                writeLogFileToolStripMenuItem,
-                showNodeTypeToolStripMenuItem
+                _writeLogFileToolStripMenuItem,
+                _showNodeTypeToolStripMenuItem
             });
-            optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            optionsToolStripMenuItem.Text = "Options";
-            writeLogFileToolStripMenuItem.CheckOnClick = true;
-            writeLogFileToolStripMenuItem.Name = "writeLogFileToolStripMenuItem";
-            writeLogFileToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            writeLogFileToolStripMenuItem.Text = "Write Log File";
-            showNodeTypeToolStripMenuItem.CheckOnClick = true;
-            showNodeTypeToolStripMenuItem.Enabled = false;
-            showNodeTypeToolStripMenuItem.Name = "showNodeTypeToolStripMenuItem";
-            showNodeTypeToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            showNodeTypeToolStripMenuItem.Text = "Show Node Type";
-            showNodeTypeToolStripMenuItem.Click += new System.EventHandler(showNodeTypeToolStripMenuItem_Click);
-            testToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _optionsToolStripMenuItem.Name = "_optionsToolStripMenuItem";
+            _optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            _optionsToolStripMenuItem.Text = "Options";
+            _writeLogFileToolStripMenuItem.CheckOnClick = true;
+            _writeLogFileToolStripMenuItem.Name = "_writeLogFileToolStripMenuItem";
+            _writeLogFileToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _writeLogFileToolStripMenuItem.Text = "Write Log File";
+            _showNodeTypeToolStripMenuItem.CheckOnClick = true;
+            _showNodeTypeToolStripMenuItem.Enabled = false;
+            _showNodeTypeToolStripMenuItem.Name = "_showNodeTypeToolStripMenuItem";
+            _showNodeTypeToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _showNodeTypeToolStripMenuItem.Text = "Show Node Type";
+            _showNodeTypeToolStripMenuItem.Click += new System.EventHandler(showNodeTypeToolStripMenuItem_Click);
+            _testToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
             {
-                runSingleTestToolStripMenuItem,
-                runTestsStripMenuItem
+                _runSingleTestToolStripMenuItem,
+                _runTestsStripMenuItem
             });
-            testToolStripMenuItem.Name = "testToolStripMenuItem";
-            testToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
-            testToolStripMenuItem.Text = "Tests";
-            testToolStripMenuItem.Visible = false;
-            runSingleTestToolStripMenuItem.Name = "runSingleTestToolStripMenuItem";
-            runSingleTestToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            runSingleTestToolStripMenuItem.Text = "Run Load/Save Test";
-            runSingleTestToolStripMenuItem.Click += new System.EventHandler(runSingleTestToolStripMenuItem_Click);
-            runTestsStripMenuItem.Name = "runTestsStripMenuItem";
-            runTestsStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            runTestsStripMenuItem.Text = "Multiple Tests";
-            runTestsStripMenuItem.Click += new System.EventHandler(runTestsToolStripMenuItem_Click);
-            helpToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[1]
+            _testToolStripMenuItem.Name = "_testToolStripMenuItem";
+            _testToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            _testToolStripMenuItem.Text = "Tests";
+            _testToolStripMenuItem.Visible = false;
+            _runSingleTestToolStripMenuItem.Name = "_runSingleTestToolStripMenuItem";
+            _runSingleTestToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            _runSingleTestToolStripMenuItem.Text = "Run Load/Save Test";
+            _runSingleTestToolStripMenuItem.Click += new System.EventHandler(runSingleTestToolStripMenuItem_Click);
+            _runTestsStripMenuItem.Name = "_runTestsStripMenuItem";
+            _runTestsStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            _runTestsStripMenuItem.Text = "Multiple Tests";
+            _runTestsStripMenuItem.Click += new System.EventHandler(runTestsToolStripMenuItem_Click);
+            _helpToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            _helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[1]
             {
-                aboutToolStripMenuItem
+                _aboutToolStripMenuItem
             });
-            helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            helpToolStripMenuItem.Text = "Help";
-            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
-            aboutToolStripMenuItem.Text = "About";
-            aboutToolStripMenuItem.Click += new System.EventHandler(aboutToolStripMenuItem_Click);
-            statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _helpToolStripMenuItem.Name = "_helpToolStripMenuItem";
+            _helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            _helpToolStripMenuItem.Text = "Help";
+            _aboutToolStripMenuItem.Name = "_aboutToolStripMenuItem";
+            _aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            _aboutToolStripMenuItem.Text = "About";
+            _aboutToolStripMenuItem.Click += new System.EventHandler(aboutToolStripMenuItem_Click);
+            _statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[2]
             {
-                progressBar,
-                statusLabel
+                _progressBar,
+                _statusLabel
             });
-            statusBar.Location = new System.Drawing.Point(0, 769);
-            statusBar.Name = "statusBar";
-            statusBar.Size = new System.Drawing.Size(789, 22);
-            statusBar.TabIndex = 2;
-            progressBar.Name = "progressBar";
-            progressBar.Size = new System.Drawing.Size(100, 16);
-            statusLabel.Name = "statusLabel";
-            statusLabel.Size = new System.Drawing.Size(86, 17);
-            statusLabel.Text = "No File Loaded";
-            editEsfComponent.Dock = System.Windows.Forms.DockStyle.Fill;
-            editEsfComponent.Location = new System.Drawing.Point(0, 24);
-            editEsfComponent.Name = "editEsfComponent";
-            editEsfComponent.RootNode = null;
-            editEsfComponent.ShowCode = false;
-            editEsfComponent.Size = new System.Drawing.Size(789, 745);
-            editEsfComponent.TabIndex = 3;
+            _statusBar.Location = new System.Drawing.Point(0, 769);
+            _statusBar.Name = "_statusBar";
+            _statusBar.Size = new System.Drawing.Size(789, 22);
+            _statusBar.TabIndex = 2;
+            _progressBar.Name = "_progressBar";
+            _progressBar.Size = new System.Drawing.Size(100, 16);
+            _statusLabel.Name = "_statusLabel";
+            _statusLabel.Size = new System.Drawing.Size(86, 17);
+            _statusLabel.Text = "No File Loaded";
+            _editEsfComponent.Dock = System.Windows.Forms.DockStyle.Fill;
+            _editEsfComponent.Location = new System.Drawing.Point(0, 24);
+            _editEsfComponent.Name = "_editEsfComponent";
+            _editEsfComponent.RootNode = null;
+            _editEsfComponent.ShowCode = false;
+            _editEsfComponent.Size = new System.Drawing.Size(789, 745);
+            _editEsfComponent.TabIndex = 3;
             base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 13f);
             base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             base.ClientSize = new System.Drawing.Size(789, 791);
-            base.Controls.Add(editEsfComponent);
-            base.Controls.Add(statusBar);
+            base.Controls.Add(_editEsfComponent);
+            base.Controls.Add(_statusBar);
             base.Controls.Add(menuStrip1);
             base.MainMenuStrip = menuStrip1;
             base.Name = "EditSF";
             Text = "EditSF";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
-            statusBar.ResumeLayout(false);
-            statusBar.PerformLayout();
+            _statusBar.ResumeLayout(false);
+            _statusBar.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -284,9 +284,9 @@ namespace EditSF
         public EditSF()
         {
             InitializeComponent();
-            updater = new ProgressUpdater(progressBar);
+            updater = new ProgressUpdater(_progressBar);
             Text = $"EditSF {Application.ProductVersion}";
-            editEsfComponent.NodeSelected += NodeSelected;
+            _editEsfComponent.NodeSelected += NodeSelected;
             if (File.Exists(BookmarkPath))
             {
                 string[] array = File.ReadAllLines(BookmarkPath);
@@ -296,7 +296,7 @@ namespace EditSF
                     AddBookmark(array2[0], array2[1], enable: false);
                 }
 
-                editBookmarkToolStripMenuItem.Enabled = (bookmarks.Count > 0);
+                _editBookmarkToolStripMenuItem.Enabled = (bookmarks.Count > 0);
             }
         }
 
@@ -321,14 +321,14 @@ namespace EditSF
 
         private void OpenFile(string openFilename)
         {
-            string text = statusLabel.Text;
+            string text = _statusLabel.Text;
             try
             {
-                fileToolStripMenuItem.Enabled = false;
-                optionsToolStripMenuItem.Enabled = false;
-                statusLabel.Text = $"Loading {openFilename}";
+                _fileToolStripMenuItem.Enabled = false;
+                _optionsToolStripMenuItem.Enabled = false;
+                _statusLabel.Text = $"Loading {openFilename}";
                 LogFileWriter logFileWriter = null;
-                if (writeLogFileToolStripMenuItem.Checked)
+                if (_writeLogFileToolStripMenuItem.Checked)
                 {
                     logFileWriter = new LogFileWriter(openFilename + ".xml");
                 }
@@ -337,7 +337,7 @@ namespace EditSF
                 FileName = openFilename;
                 logFileWriter?.Close();
                 Text = $"{Path.GetFileName(openFilename)} - EditSF {Application.ProductVersion}";
-                foreach (ToolStripItem dropDownItem in bookmarksToolStripMenuItem.DropDownItems)
+                foreach (ToolStripItem dropDownItem in _bookmarksToolStripMenuItem.DropDownItems)
                 {
                     if (dropDownItem is BookmarkItem)
                     {
@@ -347,13 +347,13 @@ namespace EditSF
             }
             catch (Exception value)
             {
-                statusLabel.Text = text;
+                _statusLabel.Text = text;
                 Console.WriteLine(value);
             }
             finally
             {
-                fileToolStripMenuItem.Enabled = true;
-                optionsToolStripMenuItem.Enabled = true;
+                _fileToolStripMenuItem.Enabled = true;
+                _optionsToolStripMenuItem.Enabled = true;
             }
         }
 
@@ -371,24 +371,26 @@ namespace EditSF
 
         private void NodeSelected(EsfNode node)
         {
-            bookmarksToolStripMenuItem.Enabled = (node != null);
-            addBookmarkToolStripMenuItem.Enabled = (node != null);
+            _bookmarksToolStripMenuItem.Enabled = (node != null);
+            _addBookmarkToolStripMenuItem.Enabled = (node != null);
         }
 
-        private void AddBookmark(object sender, EventArgs args)
+        // 添加书签——点击事件
+        private void AddBookmark_Click(object sender, EventArgs args)
         {
             InputBox inputBox = new InputBox();
             inputBox.Text = "Enter bookmark name";
-            inputBox.Input = editEsfComponent.SelectedPath;
+            inputBox.Input = _editEsfComponent.SelectedPath;
             InputBox inputBox2 = inputBox;
             if (inputBox2.ShowDialog() == DialogResult.OK && !bookmarks.Contains(inputBox2.Input))
             {
-                AddBookmark(inputBox2.Input, editEsfComponent.SelectedPath);
+                AddBookmark(inputBox2.Input, _editEsfComponent.SelectedPath);
                 SaveBookmarks();
             }
         }
 
-        public void EditBookmarks(object sender, EventArgs args)
+        // 编辑书签——点击事件
+        public void EditBookmarks_Click(object sender, EventArgs args)
         {
             List<string> leftList = new List<string>(bookmarks);
             List<string> rightList = new List<string>();
@@ -404,11 +406,11 @@ namespace EditSF
                 {
                     bookmarks.Remove(right);
                     bookmarkToPath.Remove(right);
-                    foreach (ToolStripItem dropDownItem in bookmarksToolStripMenuItem.DropDownItems)
+                    foreach (ToolStripItem dropDownItem in _bookmarksToolStripMenuItem.DropDownItems)
                     {
                         if (dropDownItem is BookmarkItem && dropDownItem.Text.Equals(right))
                         {
-                            bookmarksToolStripMenuItem.DropDownItems.Remove(dropDownItem);
+                            _bookmarksToolStripMenuItem.DropDownItems.Remove(dropDownItem);
                             break;
                         }
                     }
@@ -416,6 +418,16 @@ namespace EditSF
 
                 SaveBookmarks();
             }
+        }
+
+        private void AddBookmark(string label, string path, bool enable = true)
+        {
+            bookmarks.Add(label);
+            bookmarkToPath[label] = path;
+            _bookmarksToolStripMenuItem.DropDownItems.Add(new BookmarkItem(label, path, _editEsfComponent)
+            {
+                Enabled = enable
+            });
         }
 
         private void SaveBookmarks()
@@ -427,16 +439,6 @@ namespace EditSF
                     streamWriter.WriteLine("{0}{1}{2}", bookmark, Path.PathSeparator, bookmarkToPath[bookmark]);
                 }
             }
-        }
-
-        private void AddBookmark(string label, string path, bool enable = true)
-        {
-            bookmarks.Add(label);
-            bookmarkToPath[label] = path;
-            bookmarksToolStripMenuItem.DropDownItems.Add(new BookmarkItem(label, path, editEsfComponent)
-            {
-                Enabled = enable
-            });
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -451,9 +453,9 @@ namespace EditSF
 
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            if (filename != null)
+            if (_filename != null)
             {
-                Save(filename);
+                Save(_filename);
             }
         }
 
@@ -471,7 +473,7 @@ namespace EditSF
                     {
                         if (!item.EndsWith("EditSF_test.txt"))
                         {
-                            string value = fileTester.RunTest(item, progressBar, statusLabel);
+                            string value = fileTester.RunTest(item, _progressBar, _statusLabel);
                             textWriter.WriteLine(value);
                             textWriter.Flush();
                         }
@@ -489,7 +491,7 @@ namespace EditSF
             OpenFileDialog openFileDialog2 = openFileDialog;
             if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
-                string text = new FileTester().RunTest(openFileDialog2.FileName, progressBar, statusLabel);
+                string text = new FileTester().RunTest(openFileDialog2.FileName, _progressBar, _statusLabel);
                 MessageBox.Show(text, "Test Finished");
             }
         }
@@ -504,7 +506,7 @@ namespace EditSF
             try
             {
                 EsfCodecUtil.WriteEsfFile(filename, EditedFile);
-                editEsfComponent.RootNode.Modified = false;
+                _editEsfComponent.RootNode.Modified = false;
             }
             catch (Exception arg)
             {
@@ -519,7 +521,7 @@ namespace EditSF
 
         private void showNodeTypeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            editEsfComponent.ShowCode = true;
+            _editEsfComponent.ShowCode = true;
         }
     }
 }
