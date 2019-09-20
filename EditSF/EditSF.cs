@@ -1,12 +1,14 @@
-﻿using CommonDialogs;
-using EsfControl;
-using EsfLibrary;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
+using CommonDialogs;
+using EsfControl;
+using EsfLibrary;
 
 namespace EditSF
 {
@@ -111,32 +113,32 @@ namespace EditSF
 
         private void InitializeComponent()
         {
-            menuStrip1 = new System.Windows.Forms.MenuStrip();
-            _fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _bookmarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _writeLogFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _showNodeTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _addBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _editBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _bookmarkSeparator = new System.Windows.Forms.ToolStripSeparator();
-            _testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _runSingleTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _runTestsStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            _statusBar = new System.Windows.Forms.StatusStrip();
-            _progressBar = new System.Windows.Forms.ToolStripProgressBar();
-            _statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            _editEsfComponent = new EsfControl.EditEsfComponent();
+            menuStrip1 = new MenuStrip();
+            _fileToolStripMenuItem = new ToolStripMenuItem();
+            _openToolStripMenuItem = new ToolStripMenuItem();
+            _saveToolStripMenuItem = new ToolStripMenuItem();
+            _saveAsToolStripMenuItem = new ToolStripMenuItem();
+            _exitToolStripMenuItem = new ToolStripMenuItem();
+            _optionsToolStripMenuItem = new ToolStripMenuItem();
+            _bookmarksToolStripMenuItem = new ToolStripMenuItem();
+            _writeLogFileToolStripMenuItem = new ToolStripMenuItem();
+            _showNodeTypeToolStripMenuItem = new ToolStripMenuItem();
+            _addBookmarkToolStripMenuItem = new ToolStripMenuItem();
+            _editBookmarkToolStripMenuItem = new ToolStripMenuItem();
+            _bookmarkSeparator = new ToolStripSeparator();
+            _testToolStripMenuItem = new ToolStripMenuItem();
+            _runSingleTestToolStripMenuItem = new ToolStripMenuItem();
+            _runTestsStripMenuItem = new ToolStripMenuItem();
+            _helpToolStripMenuItem = new ToolStripMenuItem();
+            _aboutToolStripMenuItem = new ToolStripMenuItem();
+            _statusBar = new StatusStrip();
+            _progressBar = new ToolStripProgressBar();
+            _statusLabel = new ToolStripStatusLabel();
+            _editEsfComponent = new EditEsfComponent();
             menuStrip1.SuspendLayout();
             _statusBar.SuspendLayout();
             SuspendLayout();
-            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[5]
+            menuStrip1.Items.AddRange(new ToolStripItem[5]
             {
                 _fileToolStripMenuItem,
                 _bookmarksToolStripMenuItem,
@@ -144,12 +146,12 @@ namespace EditSF
                 _testToolStripMenuItem,
                 _helpToolStripMenuItem
             });
-            menuStrip1.Location = new System.Drawing.Point(0, 0);
+            menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new System.Drawing.Size(789, 24);
+            menuStrip1.Size = new Size(789, 24);
             menuStrip1.TabIndex = 1;
             menuStrip1.Text = "menuStrip1";
-            _fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[4]
+            _fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[4]
             {
                 _openToolStripMenuItem,
                 _saveToolStripMenuItem,
@@ -157,116 +159,116 @@ namespace EditSF
                 _exitToolStripMenuItem
             });
             _fileToolStripMenuItem.Name = "_fileToolStripMenuItem";
-            _fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            _fileToolStripMenuItem.Size = new Size(37, 20);
             _fileToolStripMenuItem.Text = "File";
             _openToolStripMenuItem.Name = "_openToolStripMenuItem";
-            _openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _openToolStripMenuItem.Size = new Size(123, 22);
             _openToolStripMenuItem.Text = "Open";
-            _openToolStripMenuItem.Click += new System.EventHandler(openToolStripMenuItem_Click);
+            _openToolStripMenuItem.Click += new EventHandler(openToolStripMenuItem_Click);
             _saveToolStripMenuItem.Enabled = false;
             _saveToolStripMenuItem.Name = "_saveToolStripMenuItem";
-            _saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _saveToolStripMenuItem.Size = new Size(123, 22);
             _saveToolStripMenuItem.Text = "Save";
-            _saveToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem1_Click);
+            _saveToolStripMenuItem.Click += new EventHandler(saveToolStripMenuItem1_Click);
             _saveAsToolStripMenuItem.Enabled = false;
             _saveAsToolStripMenuItem.Name = "_saveAsToolStripMenuItem";
-            _saveAsToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _saveAsToolStripMenuItem.Size = new Size(123, 22);
             _saveAsToolStripMenuItem.Text = "Save As...";
-            _saveAsToolStripMenuItem.Click += new System.EventHandler(saveToolStripMenuItem_Click);
+            _saveAsToolStripMenuItem.Click += new EventHandler(saveToolStripMenuItem_Click);
             _exitToolStripMenuItem.Name = "_exitToolStripMenuItem";
-            _exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            _exitToolStripMenuItem.Size = new Size(123, 22);
             _exitToolStripMenuItem.Text = "Exit";
-            _exitToolStripMenuItem.Click += new System.EventHandler(exitToolStripMenuItem_Click);
-            _bookmarksToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[3]
+            _exitToolStripMenuItem.Click += new EventHandler(exitToolStripMenuItem_Click);
+            _bookmarksToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[3]
             {
                 _addBookmarkToolStripMenuItem,
                 _editBookmarkToolStripMenuItem,
                 _bookmarkSeparator
             });
             _bookmarksToolStripMenuItem.Name = "_bookmarksToolStripMenuItem";
-            _bookmarksToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            _bookmarksToolStripMenuItem.Size = new Size(61, 20);
             _bookmarksToolStripMenuItem.Text = "Bookmarks";
             _addBookmarkToolStripMenuItem.Enabled = false;
             _addBookmarkToolStripMenuItem.Name = "_addBookmarkToolStripMenuItem";
-            _addBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _addBookmarkToolStripMenuItem.Size = new Size(164, 22);
             _addBookmarkToolStripMenuItem.Text = "Add Bookmark";
-            _addBookmarkToolStripMenuItem.Click += new System.EventHandler(AddBookmark_Click);
+            _addBookmarkToolStripMenuItem.Click += new EventHandler(AddBookmark_Click);
             _editBookmarkToolStripMenuItem.Enabled = true;
             _editBookmarkToolStripMenuItem.Name = "_editBookmarkToolStripMenuItem";
-            _editBookmarkToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _editBookmarkToolStripMenuItem.Size = new Size(164, 22);
             _editBookmarkToolStripMenuItem.Text = "Edit Bookmarks";
-            _editBookmarkToolStripMenuItem.Click += new System.EventHandler(EditBookmarks_Click);
-            _optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _editBookmarkToolStripMenuItem.Click += new EventHandler(EditBookmarks_Click);
+            _optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[2]
             {
                 _writeLogFileToolStripMenuItem,
                 _showNodeTypeToolStripMenuItem
             });
             _optionsToolStripMenuItem.Name = "_optionsToolStripMenuItem";
-            _optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            _optionsToolStripMenuItem.Size = new Size(61, 20);
             _optionsToolStripMenuItem.Text = "Options";
             _writeLogFileToolStripMenuItem.CheckOnClick = true;
             _writeLogFileToolStripMenuItem.Name = "_writeLogFileToolStripMenuItem";
-            _writeLogFileToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _writeLogFileToolStripMenuItem.Size = new Size(164, 22);
             _writeLogFileToolStripMenuItem.Text = "Write Log File";
             _showNodeTypeToolStripMenuItem.CheckOnClick = true;
             _showNodeTypeToolStripMenuItem.Enabled = false;
             _showNodeTypeToolStripMenuItem.Name = "_showNodeTypeToolStripMenuItem";
-            _showNodeTypeToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            _showNodeTypeToolStripMenuItem.Size = new Size(164, 22);
             _showNodeTypeToolStripMenuItem.Text = "Show Node Type";
-            _showNodeTypeToolStripMenuItem.Click += new System.EventHandler(showNodeTypeToolStripMenuItem_Click);
-            _testToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _showNodeTypeToolStripMenuItem.Click += new EventHandler(showNodeTypeToolStripMenuItem_Click);
+            _testToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[2]
             {
                 _runSingleTestToolStripMenuItem,
                 _runTestsStripMenuItem
             });
             _testToolStripMenuItem.Name = "_testToolStripMenuItem";
-            _testToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            _testToolStripMenuItem.Size = new Size(46, 20);
             _testToolStripMenuItem.Text = "Tests";
             _testToolStripMenuItem.Visible = false;
             _runSingleTestToolStripMenuItem.Name = "_runSingleTestToolStripMenuItem";
-            _runSingleTestToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            _runSingleTestToolStripMenuItem.Size = new Size(178, 22);
             _runSingleTestToolStripMenuItem.Text = "Run Load/Save Test";
-            _runSingleTestToolStripMenuItem.Click += new System.EventHandler(runSingleTestToolStripMenuItem_Click);
+            _runSingleTestToolStripMenuItem.Click += new EventHandler(runSingleTestToolStripMenuItem_Click);
             _runTestsStripMenuItem.Name = "_runTestsStripMenuItem";
-            _runTestsStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            _runTestsStripMenuItem.Size = new Size(178, 22);
             _runTestsStripMenuItem.Text = "Multiple Tests";
-            _runTestsStripMenuItem.Click += new System.EventHandler(runTestsToolStripMenuItem_Click);
-            _helpToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            _helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[1]
+            _runTestsStripMenuItem.Click += new EventHandler(runTestsToolStripMenuItem_Click);
+            _helpToolStripMenuItem.Alignment = ToolStripItemAlignment.Right;
+            _helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[1]
             {
                 _aboutToolStripMenuItem
             });
             _helpToolStripMenuItem.Name = "_helpToolStripMenuItem";
-            _helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            _helpToolStripMenuItem.Size = new Size(44, 20);
             _helpToolStripMenuItem.Text = "Help";
             _aboutToolStripMenuItem.Name = "_aboutToolStripMenuItem";
-            _aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            _aboutToolStripMenuItem.Size = new Size(107, 22);
             _aboutToolStripMenuItem.Text = "About";
-            _aboutToolStripMenuItem.Click += new System.EventHandler(aboutToolStripMenuItem_Click);
-            _statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[2]
+            _aboutToolStripMenuItem.Click += new EventHandler(aboutToolStripMenuItem_Click);
+            _statusBar.Items.AddRange(new ToolStripItem[2]
             {
                 _progressBar,
                 _statusLabel
             });
-            _statusBar.Location = new System.Drawing.Point(0, 769);
+            _statusBar.Location = new Point(0, 769);
             _statusBar.Name = "_statusBar";
-            _statusBar.Size = new System.Drawing.Size(789, 22);
+            _statusBar.Size = new Size(789, 22);
             _statusBar.TabIndex = 2;
             _progressBar.Name = "_progressBar";
-            _progressBar.Size = new System.Drawing.Size(100, 16);
+            _progressBar.Size = new Size(100, 16);
             _statusLabel.Name = "_statusLabel";
-            _statusLabel.Size = new System.Drawing.Size(86, 17);
+            _statusLabel.Size = new Size(86, 17);
             _statusLabel.Text = "No File Loaded";
-            _editEsfComponent.Dock = System.Windows.Forms.DockStyle.Fill;
-            _editEsfComponent.Location = new System.Drawing.Point(0, 24);
+            _editEsfComponent.Dock = DockStyle.Fill;
+            _editEsfComponent.Location = new Point(0, 24);
             _editEsfComponent.Name = "_editEsfComponent";
             _editEsfComponent.RootNode = null;
             _editEsfComponent.ShowCode = false;
-            _editEsfComponent.Size = new System.Drawing.Size(789, 745);
+            _editEsfComponent.Size = new Size(789, 745);
             _editEsfComponent.TabIndex = 3;
-            base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 13f);
-            base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            base.ClientSize = new System.Drawing.Size(789, 791);
+            base.AutoScaleDimensions = new SizeF(6f, 13f);
+            base.AutoScaleMode = AutoScaleMode.Font;
+            base.ClientSize = new Size(789, 791);
             base.Controls.Add(_editEsfComponent);
             base.Controls.Add(_statusBar);
             base.Controls.Add(menuStrip1);
@@ -319,6 +321,7 @@ namespace EditSF
             }
         }
 
+        // 打开文件
         private void OpenFile(string openFilename)
         {
             string text = _statusLabel.Text;
@@ -336,6 +339,12 @@ namespace EditSF
                 EditedFile = EsfCodecUtil.LoadEsfFile(openFilename);
                 FileName = openFilename;
                 logFileWriter?.Close();
+                // 自定义检索
+                searchFaction(EditedFile);
+                // 自定义换词条
+                ChangePersonality(EditedFile, 101, CeoCategory.Personality,
+                    "3k_main_ceo_trait_personality_kind", "3k_main_ceo_trait_personality_humble",
+                    "3k_main_ceo_trait_personality_fraternal");
                 Text = $"{Path.GetFileName(openFilename)} - EditSF {Application.ProductVersion}";
                 foreach (ToolStripItem dropDownItem in _bookmarksToolStripMenuItem.DropDownItems)
                 {
@@ -522,6 +531,115 @@ namespace EditSF
         private void showNodeTypeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _editEsfComponent.ShowCode = true;
+        }
+
+        private void searchFaction(EsfFile esfFile)
+        {
+            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
+            var compressedData = campaignSaveGame.Children[3];
+            var campaignEnv = compressedData.Children[3];
+            var campaignModel = campaignEnv.Children[6];
+
+            var world = campaignModel.Children[5];
+            var characterGenerator = world.Children[12];
+            var persistentCharacterStorage = characterGenerator.Children[0];
+            var characters = persistentCharacterStorage.Children[0];
+            for (var i = 0; i < characters.Children.Count - 1; i++)
+            {
+                var character = characters.Children[i];
+
+                var persistentCharacter = character.Children[0];
+                var template = persistentCharacter.AllNodes[10] as StringNode;
+
+                var persistentCharacterFactionLink = persistentCharacter.Children[0];
+                var characterArtSetInfo = persistentCharacter.Children[2];
+                var persistentRetinue = persistentCharacter.Children[6];
+
+                var faction = persistentCharacterFactionLink.AllNodes[0] as OptimizedUIntNode;
+                var characterName = characterArtSetInfo.Values[0] as StringNode;
+                if (faction.Value != 16) continue;
+                // 黄邵
+                Debug.WriteLine(i);
+                Debug.WriteLine(template.ToString());
+            }
+
+            ParentNode ceoSystemManagement = campaignModel.Children[7];
+            ParentNode ceoSystemModel = ceoSystemManagement.Children[0];
+            ParentNode ceoSystemCeos = ceoSystemManagement.Children[1];
+            ParentNode allOwnedCeos = ceoSystemCeos.Children[0];
+            foreach (var ownedCeo in allOwnedCeos.Children)
+            {
+            }
+        }
+
+        public enum CeoCategory
+        {
+            [Description("3k_main_ceo_category_traits_personality")]
+            Personality,
+        }
+
+        private void ChangePersonality(EsfFile esfFile, int characterIndex, CeoCategory ceoCategory,
+            String personality1, String personality2, String personality3)
+        {
+            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
+            var compressedData = campaignSaveGame.Children[3];
+            var campaignEnv = compressedData.Children[3];
+            var campaignModel = campaignEnv.Children[6];
+
+            var ceoSystemManagement = campaignModel.Children[7];
+            var ceoSystemModel = ceoSystemManagement.Children[0];
+            var ceoSystemCeos = ceoSystemManagement.Children[1];
+
+            var allOwnedCeos = ceoSystemCeos.Children[0];
+            OptimizedUIntNode code1 = null;
+            OptimizedUIntNode code2 = null;
+            OptimizedUIntNode code3 = null;
+            foreach (ParentNode ownedCeo in allOwnedCeos.Children)
+            {
+                String name = ownedCeo.AllNodes[0].ToString();
+                if (name == personality1)
+                {
+                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
+                    code1 = ceo.AllNodes[5] as OptimizedUIntNode;
+                }
+                else if (name == personality2)
+                {
+                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
+                    code2 = ceo.AllNodes[5] as OptimizedUIntNode;
+                }
+                else if (name == personality3)
+                {
+                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
+                    code3 = ceo.AllNodes[5] as OptimizedUIntNode;
+                }
+            }
+
+            var charactersConnectedCeoManagement = ceoSystemModel.Children[2];
+            var character = charactersConnectedCeoManagement.Children[characterIndex];
+            var management = character.Children[0];
+            var equipmentManager = management.Children[1];
+            var equipmentSlotsBlock = equipmentManager.Children[0];
+            foreach (var block in equipmentSlotsBlock.Children)
+            {
+                if (ceoCategory == CeoCategory.Personality)
+                {
+                    changePersonality(block, code1, code2, code3);
+                }
+            }
+        }
+
+        private void changePersonality(ParentNode block, OptimizedUIntNode code1, OptimizedUIntNode code2,
+            OptimizedUIntNode code3)
+        {
+            if (block.Name != "3k_main_ceo_category_traits_personality") return;
+            var equipmentCategoryManager = block.Children[0];
+            var ceoBlock = equipmentCategoryManager.Children[0];
+            // 特性1
+            //ceoBlock.Children[0];
+            // 特性2
+            //ceoBlock.Children[1];
+            // 特性3
+            //ceoBlock.Children[2];
         }
     }
 }
