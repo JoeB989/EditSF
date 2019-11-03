@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Policy;
 using EsfLibrary;
 
 namespace EditSF.tw3k
@@ -40,13 +38,19 @@ namespace EditSF.tw3k
 
                 var faction = persistentCharacterFactionLink.AllNodes[0].ToString();
                 var characterName = characterArtSetInfo.Values[0] as StringNode;
-                //8何仪 16黄邵 1刘备
-                if (!faction.Equals("1")) continue;
-                // 
-                Debug.WriteLine(i);
-                Debug.WriteLine(template.ToString());
-
-                ChangePersonality(esfFile, i, CeoCategory.Personality, "", "", "");
+                //判断派系 1刘备
+                if (!faction.Equals("2")) continue;
+                //判断模板
+                if (template == null) continue;
+                String templateName = template.ToString();
+//                if (templateName == "3k_main_template_historical_liu_bei_hero_earth")
+                if (templateName.Contains("liu_bei"))
+                {
+                    Debug.WriteLine(i);
+                    Debug.WriteLine(templateName);
+                    ChangePersonality(esfFile, i, CeoCategory.personality, "", "", "",
+                        "", "", "", "");
+                }
             }
         }
 
@@ -73,15 +77,24 @@ namespace EditSF.tw3k
                 var code = ceo.AllNodes[5].ToString();
 
                 if ("0" == code) continue;
+                if ("17" == code)
+                {
+                    Debug.WriteLine("17号coe:" + name2);
+                }
 
                 if (name2.Contains("template"))
                 {
-                    Debug.WriteLine("模板[{0}]", name2);
+                    Debug.WriteLine("模板[{0}", name2);
                 }
 
                 if (!CeoMapNameKey.ContainsKey(name2))
                 {
                     CeoMapNameKey.Add(name2, code);
+                    if (name2.StartsWith("3k_main_ceo_node_trait_personality") ||
+                        name2.StartsWith("3k_ytr_ceo_node_trait_personality"))
+                    {
+                        Debug.WriteLine(name2);
+                    }
                 }
 
 //                else
@@ -100,12 +113,13 @@ namespace EditSF.tw3k
 //                }
             }
 
-            Debug.WriteLine("加载数量：{0}", CeoMapNameKey.Count);
-            Debug.WriteLine("加载数量：{0}", CeoMapCodeKey.Count);
+            Debug.WriteLine("加载name数量：{0}", CeoMapNameKey.Count);
+            Debug.WriteLine("加载code数量：{0}", CeoMapCodeKey.Count);
         }
 
-        private static void ChangePersonality(EsfFile esfFile, int characterIndex, CeoCategory ceoCategory,
-            String personality1, String personality2, String personality3)
+        private static void ChangePersonality(EsfFile esfFile, int characterIndex, String ceoCategory,
+            String personality1, String personality2, String personality3, String personality4, String personality5,
+            String personality6, String personality7)
         {
             if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
             var compressedData = campaignSaveGame.Children[3];
@@ -118,23 +132,42 @@ namespace EditSF.tw3k
             var charactersConnectedCeoManagement = ceoSystemModel.Children[2];
             var character = charactersConnectedCeoManagement.Children[characterIndex];
             var management = character.Children[0];
+            //装备管理
             var equipmentManager = management.Children[1];
-            var equipmentSlotsBlock = equipmentManager.Children[0];
-            foreach (var block in equipmentSlotsBlock.Children)
+            var equipmentSlotsBlocks = equipmentManager.Children[0];
+            //ceo关系管理
+            var ceoOwnerShipManager = management.Children[3];
+            var ceoPoolBlocks = ceoOwnerShipManager.Children[0];
+            //遍历获取装备槽和ceo池
+            ParentNode equipmentSlotsBlock = null;
+            ParentNode ceoPoolBlock = null;
+            foreach (var block in equipmentSlotsBlocks.Children)
             {
-                if (ceoCategory == CeoCategory.Personality)
+                String blockCategory = block.AllNodes[0].ToString();
+                if (blockCategory == ceoCategory)
                 {
-                    ChangePersonality(block, personality1, personality2, personality3);
+                    equipmentSlotsBlock = block;
                 }
             }
+            foreach (var block in ceoPoolBlocks.Children)
+            {
+                String blockCategory = block.AllNodes[0].ToString();
+                if (blockCategory == ceoCategory)
+                {
+                    equipmentSlotsBlock = block;
+                }
+            }
+
+            ChangePersonality(equipmentSlotsBlock, ceoPoolBlock, personality1, personality2, personality3,
+                personality4, personality5, personality6, personality7);
         }
 
-        private static void ChangePersonality(ParentNode block, String code1,
-            String code2, String code3)
+        private static void ChangePersonality(ParentNode equipmentSlotsBlock, ParentNode ceoPoolBlock, String code1,
+            String code2, String code3, String code4, String code5, String code6, String code7)
         {
-            var blockName = block.AllNodes[0].ToString();
-            if (blockName != "3k_main_ceo_category_traits_personality") return;
-            var equipmentCategoryManager = block.Children[0];
+            var blockName = equipmentSlotsBlock.AllNodes[0].ToString();
+            if (blockName != CeoCategory.personality) return;
+            var equipmentCategoryManager = equipmentSlotsBlock.Children[0];
             var ceoBlock = equipmentCategoryManager.Children[0];
             // 特性1
             var a = ceoBlock.Children[0].Children[0].AllNodes[0].ToString();
@@ -158,6 +191,9 @@ namespace EditSF.tw3k
             if (CeoMapCodeKey.ContainsKey(f)) Debug.WriteLine("{0}  {1}", f, CeoMapCodeKey[f]);
             if (CeoMapCodeKey.ContainsKey(g)) Debug.WriteLine("{0}  {1}", g, CeoMapCodeKey[g]);
             Debug.WriteLine("-----------------------------");
+            var map = CeoMapNameKey;
+            String codeHeavenHonest = map["3k_ytr_ceo_node_trait_personality_heaven_honest"];
+            Debug.WriteLine("{0}  {1}", codeHeavenHonest, CeoMapCodeKey[codeHeavenHonest]);
         }
     }
 }
