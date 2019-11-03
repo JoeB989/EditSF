@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using CommonDialogs;
+using EditSF.tw3k;
 using EsfControl;
 using EsfLibrary;
 
@@ -340,11 +341,19 @@ namespace EditSF
                 FileName = openFilename;
                 logFileWriter?.Close();
                 // 自定义检索
-                searchFaction(EditedFile);
+                try
+                {
+                    Tw3kSearch.SearchFaction(EditedFile);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    throw;
+                }
                 // 自定义换词条
-                ChangePersonality(EditedFile, 101, CeoCategory.Personality,
-                    "3k_main_ceo_trait_personality_kind", "3k_main_ceo_trait_personality_humble",
-                    "3k_main_ceo_trait_personality_fraternal");
+//                ChangePersonality(EditedFile, 101, CeoCategory.Personality,
+//                    "3k_main_ceo_trait_personality_kind", "3k_main_ceo_trait_personality_humble",
+//                    "3k_main_ceo_trait_personality_fraternal");
                 Text = $"{Path.GetFileName(openFilename)} - EditSF {Application.ProductVersion}";
                 foreach (ToolStripItem dropDownItem in _bookmarksToolStripMenuItem.DropDownItems)
                 {
@@ -531,115 +540,6 @@ namespace EditSF
         private void showNodeTypeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _editEsfComponent.ShowCode = true;
-        }
-
-        private void searchFaction(EsfFile esfFile)
-        {
-            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
-            var compressedData = campaignSaveGame.Children[3];
-            var campaignEnv = compressedData.Children[3];
-            var campaignModel = campaignEnv.Children[6];
-
-            var world = campaignModel.Children[5];
-            var characterGenerator = world.Children[12];
-            var persistentCharacterStorage = characterGenerator.Children[0];
-            var characters = persistentCharacterStorage.Children[0];
-            for (var i = 0; i < characters.Children.Count - 1; i++)
-            {
-                var character = characters.Children[i];
-
-                var persistentCharacter = character.Children[0];
-                var template = persistentCharacter.AllNodes[10] as StringNode;
-
-                var persistentCharacterFactionLink = persistentCharacter.Children[0];
-                var characterArtSetInfo = persistentCharacter.Children[2];
-                var persistentRetinue = persistentCharacter.Children[6];
-
-                var faction = persistentCharacterFactionLink.AllNodes[0] as OptimizedUIntNode;
-                var characterName = characterArtSetInfo.Values[0] as StringNode;
-                if (faction.Value != 16) continue;
-                // 黄邵
-                Debug.WriteLine(i);
-                Debug.WriteLine(template.ToString());
-            }
-
-            ParentNode ceoSystemManagement = campaignModel.Children[7];
-            ParentNode ceoSystemModel = ceoSystemManagement.Children[0];
-            ParentNode ceoSystemCeos = ceoSystemManagement.Children[1];
-            ParentNode allOwnedCeos = ceoSystemCeos.Children[0];
-            foreach (var ownedCeo in allOwnedCeos.Children)
-            {
-            }
-        }
-
-        public enum CeoCategory
-        {
-            [Description("3k_main_ceo_category_traits_personality")]
-            Personality,
-        }
-
-        private void ChangePersonality(EsfFile esfFile, int characterIndex, CeoCategory ceoCategory,
-            String personality1, String personality2, String personality3)
-        {
-            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
-            var compressedData = campaignSaveGame.Children[3];
-            var campaignEnv = compressedData.Children[3];
-            var campaignModel = campaignEnv.Children[6];
-
-            var ceoSystemManagement = campaignModel.Children[7];
-            var ceoSystemModel = ceoSystemManagement.Children[0];
-            var ceoSystemCeos = ceoSystemManagement.Children[1];
-
-            var allOwnedCeos = ceoSystemCeos.Children[0];
-            OptimizedUIntNode code1 = null;
-            OptimizedUIntNode code2 = null;
-            OptimizedUIntNode code3 = null;
-            foreach (ParentNode ownedCeo in allOwnedCeos.Children)
-            {
-                String name = ownedCeo.AllNodes[0].ToString();
-                if (name == personality1)
-                {
-                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
-                    code1 = ceo.AllNodes[5] as OptimizedUIntNode;
-                }
-                else if (name == personality2)
-                {
-                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
-                    code2 = ceo.AllNodes[5] as OptimizedUIntNode;
-                }
-                else if (name == personality3)
-                {
-                    ParentNode ceo = ownedCeo.AllNodes[1] as MemoryMappedRecordNode;
-                    code3 = ceo.AllNodes[5] as OptimizedUIntNode;
-                }
-            }
-
-            var charactersConnectedCeoManagement = ceoSystemModel.Children[2];
-            var character = charactersConnectedCeoManagement.Children[characterIndex];
-            var management = character.Children[0];
-            var equipmentManager = management.Children[1];
-            var equipmentSlotsBlock = equipmentManager.Children[0];
-            foreach (var block in equipmentSlotsBlock.Children)
-            {
-                if (ceoCategory == CeoCategory.Personality)
-                {
-                    changePersonality(block, code1, code2, code3);
-                }
-            }
-        }
-
-        private void changePersonality(ParentNode block, OptimizedUIntNode code1, OptimizedUIntNode code2,
-            OptimizedUIntNode code3)
-        {
-            if (block.Name != "3k_main_ceo_category_traits_personality") return;
-            var equipmentCategoryManager = block.Children[0];
-            var ceoBlock = equipmentCategoryManager.Children[0];
-            // 特性1
-            //ceoBlock.Children[0];
-            // 特性2
-            //ceoBlock.Children[1];
-            // 特性3
-            //ceoBlock.Children[2];
         }
     }
 }
