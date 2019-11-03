@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using EsfLibrary;
 
 namespace EditSF.tw3k
 {
     public class Tw3kSearch
     {
-        private static readonly Dictionary<String, String> CeoMapNameKey = new Dictionary<string, string>();
-        private static readonly Dictionary<String, String> CeoMapCodeKey = new Dictionary<String, String>();
+        private static readonly Dictionary<String, ParentNode> CeoMapNameKey = new Dictionary<string, ParentNode>();
+        private static readonly Dictionary<String, String> CeoMapEquipmentCodeKey = new Dictionary<String, String>();
 
         public static void SearchFaction(EsfFile esfFile)
         {
@@ -24,7 +25,7 @@ namespace EditSF.tw3k
             var characterGenerator = world.Children[12];
             var persistentCharacterStorage = characterGenerator.Children[0];
             var characters = persistentCharacterStorage.Children[0];
-
+            
             for (var i = 0; i < characters.Children.Count - 1; i++)
             {
                 var character = characters.Children[i];
@@ -49,7 +50,7 @@ namespace EditSF.tw3k
                     Debug.WriteLine(i);
                     Debug.WriteLine(templateName);
                     ChangePersonality(esfFile, i, CeoCategory.personality, "", "", "",
-                        "", "", "", "");
+                        "3k_ytr_ceo_trait_personality_heaven_honest", "", "", "");
                 }
             }
         }
@@ -58,7 +59,7 @@ namespace EditSF.tw3k
         {
             if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
             CeoMapNameKey.Clear();
-            CeoMapCodeKey.Clear();
+            CeoMapEquipmentCodeKey.Clear();
 
             var compressedData = campaignSaveGame.Children[3];
             var campaignEnv = compressedData.Children[3];
@@ -72,28 +73,19 @@ namespace EditSF.tw3k
                 var ownedCeo = allOwnedCeos.Children[i];
                 var ceo = ownedCeo.Children[0];
                 var ceoDes = ownedCeo.Children[1];
-//                String name = ownedCeo.AllNodes[0].ToString();
+                String name = ownedCeo.AllNodes[0].ToString();
                 String name2 = ceoDes.AllNodes[0].ToString();
-                var code = ceo.AllNodes[5].ToString();
+                var ceoCode = ceo.AllNodes[0].ToString();
+                var equipmentCode = ceo.AllNodes[5].ToString();
 
-                if ("0" == code) continue;
-                if ("17" == code)
+                if ("0" == equipmentCode) continue;
+                if (!CeoMapNameKey.ContainsKey(name))
                 {
-                    Debug.WriteLine("17号coe:" + name2);
-                }
-
-                if (name2.Contains("template"))
-                {
-                    Debug.WriteLine("模板[{0}", name2);
-                }
-
-                if (!CeoMapNameKey.ContainsKey(name2))
-                {
-                    CeoMapNameKey.Add(name2, code);
-                    if (name2.StartsWith("3k_main_ceo_node_trait_personality") ||
-                        name2.StartsWith("3k_ytr_ceo_node_trait_personality"))
+                    CeoMapNameKey.Add(name, ceo);
+                    if (name.StartsWith("3k_main_ceo_trait_personality") ||
+                        name.StartsWith("3k_ytr_ceo_trait_personality"))
                     {
-                        Debug.WriteLine(name2);
+                        Debug.WriteLine(name);
                     }
                 }
 
@@ -102,9 +94,9 @@ namespace EditSF.tw3k
 //                    Debug.WriteLine("已存在[{0}]/[{1}]，未添加[{2}]/[{3}]", name2, CeoMapNameKey[name2], name2, code);
 //                }
 
-                if (!CeoMapCodeKey.ContainsKey(code))
+                if (!CeoMapEquipmentCodeKey.ContainsKey(equipmentCode))
                 {
-                    CeoMapCodeKey.Add(code, name2);
+                    CeoMapEquipmentCodeKey.Add(equipmentCode, name);
                 }
 
 //                else
@@ -114,14 +106,14 @@ namespace EditSF.tw3k
             }
 
             Debug.WriteLine("加载name数量：{0}", CeoMapNameKey.Count);
-            Debug.WriteLine("加载code数量：{0}", CeoMapCodeKey.Count);
+            Debug.WriteLine("加载code数量：{0}", CeoMapEquipmentCodeKey.Count);
         }
 
-        private static void ChangePersonality(EsfFile esfFile, int characterIndex, String ceoCategory,
+        private static bool ChangePersonality(EsfFile esfFile, int characterIndex, String ceoCategory,
             String personality1, String personality2, String personality3, String personality4, String personality5,
             String personality6, String personality7)
         {
-            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return;
+            if (!(esfFile.RootNode is ParentNode campaignSaveGame)) return false;
             var compressedData = campaignSaveGame.Children[3];
             var campaignEnv = compressedData.Children[3];
             var campaignModel = campaignEnv.Children[6];
@@ -149,51 +141,102 @@ namespace EditSF.tw3k
                     equipmentSlotsBlock = block;
                 }
             }
+
             foreach (var block in ceoPoolBlocks.Children)
             {
                 String blockCategory = block.AllNodes[0].ToString();
                 if (blockCategory == ceoCategory)
                 {
-                    equipmentSlotsBlock = block;
+                    ceoPoolBlock = block;
                 }
             }
 
-            ChangePersonality(equipmentSlotsBlock, ceoPoolBlock, personality1, personality2, personality3,
+            return ChangePersonality(equipmentSlotsBlock, ceoPoolBlock, personality1, personality2, personality3,
                 personality4, personality5, personality6, personality7);
         }
 
-        private static void ChangePersonality(ParentNode equipmentSlotsBlock, ParentNode ceoPoolBlock, String code1,
-            String code2, String code3, String code4, String code5, String code6, String code7)
+        private static bool ChangePersonality(ParentNode equipmentSlotsBlock, ParentNode ceoPoolBlock,
+            String personality1, String personality2, String personality3, String personality4, String personality5,
+            String personality6, String personality7)
         {
-            var blockName = equipmentSlotsBlock.AllNodes[0].ToString();
-            if (blockName != CeoCategory.personality) return;
+            var equipmentSlotsBlockName = equipmentSlotsBlock.AllNodes[0].ToString();
+            if (equipmentSlotsBlockName != CeoCategory.personality) return false;
             var equipmentCategoryManager = equipmentSlotsBlock.Children[0];
-            var ceoBlock = equipmentCategoryManager.Children[0];
-            // 特性1
-            var a = ceoBlock.Children[0].Children[0].AllNodes[0].ToString();
-            // 特性2
-            var b = ceoBlock.Children[1].Children[0].AllNodes[0].ToString();
-            // 特性3
-            var c = ceoBlock.Children[2].Children[0].AllNodes[0].ToString();
-            // 特性4
-            var d = ceoBlock.Children[3].Children[0].AllNodes[0].ToString();
-            // 特性5
-            var e = ceoBlock.Children[4].Children[0].AllNodes[0].ToString();
-            // 特性6
-            var f = ceoBlock.Children[5].Children[0].AllNodes[0].ToString();
-            // 特性7
-            var g = ceoBlock.Children[6].Children[0].AllNodes[0].ToString();
-            if (CeoMapCodeKey.ContainsKey(a)) Debug.WriteLine("{0}  {1}", a, CeoMapCodeKey[a]);
-            if (CeoMapCodeKey.ContainsKey(b)) Debug.WriteLine("{0}  {1}", b, CeoMapCodeKey[b]);
-            if (CeoMapCodeKey.ContainsKey(c)) Debug.WriteLine("{0}  {1}", c, CeoMapCodeKey[c]);
-            if (CeoMapCodeKey.ContainsKey(d)) Debug.WriteLine("{0}  {1}", d, CeoMapCodeKey[d]);
-            if (CeoMapCodeKey.ContainsKey(e)) Debug.WriteLine("{0}  {1}", e, CeoMapCodeKey[e]);
-            if (CeoMapCodeKey.ContainsKey(f)) Debug.WriteLine("{0}  {1}", f, CeoMapCodeKey[f]);
-            if (CeoMapCodeKey.ContainsKey(g)) Debug.WriteLine("{0}  {1}", g, CeoMapCodeKey[g]);
+            var equipmentSlotsBlockSlots = equipmentCategoryManager.Children[0];
+
+            var ceoPoolBlockName = ceoPoolBlock.AllNodes[0].ToString();
+            if (ceoPoolBlockName != CeoCategory.personality) return false;
+            var ceoPool = ceoPoolBlock.Children[0];
+            //RecordArrayNode
+            var ceoMapBlocks = ceoPool.Children[0];
+            //RecordEntryNode
+            RecordEntryNode c0 = ceoMapBlocks.Children[0] as RecordEntryNode;
+            if (c0 == null) return false;
+            if (personality4 != null)
+            {
+                var c3 = c0.CreateCopy() as RecordEntryNode;
+                if (c3?.AllNodes[0] == null) return false;
+                var c3Name = c3.AllNodes[0] as StringNode;
+                c3Name.Value = personality4;
+                var c3CeoBlocks = c3.AllNodes[1] as RecordArrayNode;
+                var c3Code = c3CeoBlocks.Children[0].AllNodes[0] as OptimizedUIntNode; //12 15 14
+                c3Code.Value = (CeoMapNameKey[personality4].AllNodes[0] as OptimizedUIntNode).Value;
+                ceoMapBlocks.Value.Insert(3,c3);
+                var e3Code = equipmentSlotsBlockSlots.Children[3].Children[0].AllNodes[0] as OptimizedUIntNode; //14 15 16
+                e3Code.Value = (CeoMapNameKey[personality4].AllNodes[5] as OptimizedUIntNode).Value;
+            }
+
+
+//            // 特性1
+//            var a = equipmentSlotsBlockSlots.Children[0].Children[0].AllNodes[0].ToString();
+//            // 特性2
+//            var b = equipmentSlotsBlockSlots.Children[1].Children[0].AllNodes[0].ToString();
+//            // 特性3
+//            var c = equipmentSlotsBlockSlots.Children[2].Children[0].AllNodes[0].ToString();
+//            // 特性4
+//            var d = equipmentSlotsBlockSlots.Children[3].Children[0].AllNodes[0].ToString();
+//            // 特性5
+//            var e = equipmentSlotsBlockSlots.Children[4].Children[0].AllNodes[0].ToString();
+//            // 特性6
+//            var f = equipmentSlotsBlockSlots.Children[5].Children[0].AllNodes[0].ToString();
+//            // 特性7
+//            var g = equipmentSlotsBlockSlots.Children[6].Children[0].AllNodes[0].ToString();
+//            if (CeoMapEquipmentCodeKey.ContainsKey(a)) Debug.WriteLine("{0}  {1}", a, CeoMapEquipmentCodeKey[a]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(b)) Debug.WriteLine("{0}  {1}", b, CeoMapEquipmentCodeKey[b]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(c)) Debug.WriteLine("{0}  {1}", c, CeoMapEquipmentCodeKey[c]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(d)) Debug.WriteLine("{0}  {1}", d, CeoMapEquipmentCodeKey[d]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(e)) Debug.WriteLine("{0}  {1}", e, CeoMapEquipmentCodeKey[e]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(f)) Debug.WriteLine("{0}  {1}", f, CeoMapEquipmentCodeKey[f]);
+//            if (CeoMapEquipmentCodeKey.ContainsKey(g)) Debug.WriteLine("{0}  {1}", g, CeoMapEquipmentCodeKey[g]);
             Debug.WriteLine("-----------------------------");
-            var map = CeoMapNameKey;
-            String codeHeavenHonest = map["3k_ytr_ceo_node_trait_personality_heaven_honest"];
-            Debug.WriteLine("{0}  {1}", codeHeavenHonest, CeoMapCodeKey[codeHeavenHonest]);
+//            var map = CeoMapNameKey;
+//            String codeHeavenHonest = map["3k_ytr_ceo_trait_personality_heaven_honest"];
+//            Debug.WriteLine("{0}  {1}", codeHeavenHonest, CeoMapCodeKey[codeHeavenHonest]);
+
+            return true;
+        }
+
+        public static T DeepCopyByReflection<T>(T obj)
+        {
+            if (obj is string || obj.GetType().IsValueType)
+                return obj;
+
+            object retval = Activator.CreateInstance(obj.GetType());
+            FieldInfo[] fields = obj.GetType()
+                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+            foreach (var field in fields)
+            {
+                try
+                {
+                    field.SetValue(retval, DeepCopyByReflection(field.GetValue(obj)));
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                }
+            }
+
+            return (T) retval;
         }
     }
 }
