@@ -25,13 +25,14 @@ namespace EditSF.tw3k
             var characterGenerator = world.Children[12];
             var persistentCharacterStorage = characterGenerator.Children[0];
             var characters = persistentCharacterStorage.Children[0];
-            
+
             for (var i = 0; i < characters.Children.Count - 1; i++)
             {
                 var character = characters.Children[i];
 
                 var persistentCharacter = character.Children[0];
-                var template = persistentCharacter.AllNodes[10] as StringNode;
+                var characterIndex = persistentCharacter.AllNodes[0].ToString();
+                var templateName = persistentCharacter.AllNodes[10].ToString();
 
                 var persistentCharacterFactionLink = persistentCharacter.Children[0];
                 var characterArtSetInfo = persistentCharacter.Children[2];
@@ -39,19 +40,17 @@ namespace EditSF.tw3k
 
                 var faction = persistentCharacterFactionLink.AllNodes[0].ToString();
                 var characterName = characterArtSetInfo.Values[0] as StringNode;
-                //判断派系 1刘备
+                //判断派系 1刘备 4袁绍
                 if (!faction.Equals("2")) continue;
                 //判断模板
-                if (template == null) continue;
-                String templateName = template.ToString();
-//                if (templateName == "3k_main_template_historical_liu_bei_hero_earth")
-                if (templateName.Contains("liu_bei"))
-                {
-                    Debug.WriteLine(i);
-                    Debug.WriteLine(templateName);
-                    ChangePersonality(esfFile, i, CeoCategory.personality, "", "", "",
-                        "3k_ytr_ceo_trait_personality_heaven_honest", "", "", "");
-                }
+//                String templateName = template.ToString();
+//                if (templateName.Contains("xu_you"))
+//                {
+                Debug.WriteLine(characterIndex);
+                Debug.WriteLine(templateName);
+                ChangePersonality(esfFile, characterIndex, CeoCategory.personality, "", "", "",
+                    "3k_ytr_ceo_trait_personality_heaven_honest", "", "", "");
+//                }
             }
         }
 
@@ -85,7 +84,7 @@ namespace EditSF.tw3k
                     if (name.StartsWith("3k_main_ceo_trait_personality") ||
                         name.StartsWith("3k_ytr_ceo_trait_personality"))
                     {
-                        Debug.WriteLine(name);
+                        //Debug.WriteLine(name);
                     }
                 }
 
@@ -109,7 +108,7 @@ namespace EditSF.tw3k
             Debug.WriteLine("加载code数量：{0}", CeoMapEquipmentCodeKey.Count);
         }
 
-        private static bool ChangePersonality(EsfFile esfFile, int characterIndex, String ceoCategory,
+        private static bool ChangePersonality(EsfFile esfFile, String characterIndex, String ceoCategory,
             String personality1, String personality2, String personality3, String personality4, String personality5,
             String personality6, String personality7)
         {
@@ -122,7 +121,17 @@ namespace EditSF.tw3k
             var ceoSystemModel = ceoSystemManagement.Children[0];
             var ceoSystemCeos = ceoSystemManagement.Children[1];
             var charactersConnectedCeoManagement = ceoSystemModel.Children[2];
-            var character = charactersConnectedCeoManagement.Children[characterIndex];
+            var charactersConnectedCeoManagementChildren = charactersConnectedCeoManagement.Children;
+            ParentNode character = null;
+            foreach (var c in charactersConnectedCeoManagementChildren)
+            {
+                if (c.AllNodes[0].ToString().Equals(characterIndex))
+                {
+                    character = c;
+                }
+            }
+
+            if (character == null) return false;
             var management = character.Children[0];
             //装备管理
             var equipmentManager = management.Children[1];
@@ -181,18 +190,19 @@ namespace EditSF.tw3k
                 var c3CeoBlocks = c3.AllNodes[1] as RecordArrayNode;
                 var c3Code = c3CeoBlocks.Children[0].AllNodes[0] as OptimizedUIntNode; //12 15 14
                 c3Code.Value = (CeoMapNameKey[personality4].AllNodes[0] as OptimizedUIntNode).Value;
-                ceoMapBlocks.Value.Insert(3,c3);
-                var e3Code = equipmentSlotsBlockSlots.Children[3].Children[0].AllNodes[0] as OptimizedUIntNode; //14 15 16
+                ceoMapBlocks.Value.Insert(3, c3);
+                var e3Code =
+                    equipmentSlotsBlockSlots.Children[3].Children[0].AllNodes[0] as OptimizedUIntNode; //14 15 16
                 e3Code.Value = (CeoMapNameKey[personality4].AllNodes[5] as OptimizedUIntNode).Value;
             }
 
 
-//            // 特性1
-//            var a = equipmentSlotsBlockSlots.Children[0].Children[0].AllNodes[0].ToString();
-//            // 特性2
-//            var b = equipmentSlotsBlockSlots.Children[1].Children[0].AllNodes[0].ToString();
-//            // 特性3
-//            var c = equipmentSlotsBlockSlots.Children[2].Children[0].AllNodes[0].ToString();
+            // 特性1
+            var a = equipmentSlotsBlockSlots.Children[0].Children[0].AllNodes[0].ToString();
+            // 特性2
+            var b = equipmentSlotsBlockSlots.Children[1].Children[0].AllNodes[0].ToString();
+            // 特性3
+            var c = equipmentSlotsBlockSlots.Children[2].Children[0].AllNodes[0].ToString();
 //            // 特性4
 //            var d = equipmentSlotsBlockSlots.Children[3].Children[0].AllNodes[0].ToString();
 //            // 特性5
@@ -201,9 +211,9 @@ namespace EditSF.tw3k
 //            var f = equipmentSlotsBlockSlots.Children[5].Children[0].AllNodes[0].ToString();
 //            // 特性7
 //            var g = equipmentSlotsBlockSlots.Children[6].Children[0].AllNodes[0].ToString();
-//            if (CeoMapEquipmentCodeKey.ContainsKey(a)) Debug.WriteLine("{0}  {1}", a, CeoMapEquipmentCodeKey[a]);
-//            if (CeoMapEquipmentCodeKey.ContainsKey(b)) Debug.WriteLine("{0}  {1}", b, CeoMapEquipmentCodeKey[b]);
-//            if (CeoMapEquipmentCodeKey.ContainsKey(c)) Debug.WriteLine("{0}  {1}", c, CeoMapEquipmentCodeKey[c]);
+            if (CeoMapEquipmentCodeKey.ContainsKey(a)) Debug.WriteLine("{0}  {1}", a, CeoMapEquipmentCodeKey[a]);
+            if (CeoMapEquipmentCodeKey.ContainsKey(b)) Debug.WriteLine("{0}  {1}", b, CeoMapEquipmentCodeKey[b]);
+            if (CeoMapEquipmentCodeKey.ContainsKey(c)) Debug.WriteLine("{0}  {1}", c, CeoMapEquipmentCodeKey[c]);
 //            if (CeoMapEquipmentCodeKey.ContainsKey(d)) Debug.WriteLine("{0}  {1}", d, CeoMapEquipmentCodeKey[d]);
 //            if (CeoMapEquipmentCodeKey.ContainsKey(e)) Debug.WriteLine("{0}  {1}", e, CeoMapEquipmentCodeKey[e]);
 //            if (CeoMapEquipmentCodeKey.ContainsKey(f)) Debug.WriteLine("{0}  {1}", f, CeoMapEquipmentCodeKey[f]);
