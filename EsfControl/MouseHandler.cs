@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 using CommonDialogs;
 using EsfLibrary;
@@ -28,6 +29,16 @@ namespace EsfControl
                     contextMenuStrip.Items.Add(value);
                     value = CreateMenuItem("Move", parentNode, MoveNode);
                     contextMenuStrip.Items.Add(value);
+                }
+                else if ((nodeAt.Tag is RecordNode) && ((nodeAt.Tag as RecordNode).Name == "TRAITS"))
+                {
+                    var traitNode = parentNode.Children[0];
+                    if ((traitNode != null) && (traitNode.Children.Count > 0))
+                    {
+                        treeView.SelectedNode = nodeAt;
+                        ToolStripItem item = CreateMenuItem("Show Traits ...", traitNode, ShowTraits);
+                        contextMenuStrip.Items.Add(item);
+                    }
                 }
 
                 if (contextMenuStrip.Items.Count != 0)
@@ -111,6 +122,22 @@ namespace EsfControl
                 MessageBox.Show($"Enter index (between 0 and {list.Count - 1})", "Invalid input", MessageBoxButtons.OK,
                     MessageBoxIcon.Hand);
             }
+        }
+
+        private void ShowTraits(EsfNode node)
+        {
+            var traitNode = (node as ParentNode);
+            StringBuilder traits = new StringBuilder();
+            foreach (RecordEntryNode trait in traitNode.Children)
+			{
+                traits.AppendFormat("{0} = {1}", trait.Values[0], trait.Values[1]);
+                traits.AppendLine();
+			}
+            var ret = MessageBox.Show(traits.ToString(), "Click OK to copy traits to clipboard", MessageBoxButtons.OKCancel);
+            if (ret == DialogResult.OK)
+			{
+                Clipboard.SetText(traits.ToString());
+			}
         }
     }
 }
