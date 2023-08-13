@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/EsfLibrary/bin/Debug
+/EsfControl/bin/Debug
+/SevenZip/bin/Debug
+/SevenZip/obj/Debug
+/EditSF/obj
+/.vs
+/CommonDialogs/bin/Debug
+/CommonDialogs/obj/Debug
+/CommonDialogs/obj/Release
+/EditSF/bin/Debug
+/SevenZip/obj/Release
+/EsfLibrary/obj
+/EsfControl/obj
