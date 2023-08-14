@@ -517,7 +517,7 @@ namespace EditSF
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"EditSF {Application.ProductVersion}\nCreated by daniu", "About EditSF");
+            MessageBox.Show($"EditSF {Application.ProductVersion} (+cpb 0.1)\nCreated by daniu\n\nmodding in progress by Crispy Bacon", "About EditSF");
         }
 
         private void Save(string filename)
