@@ -341,6 +341,8 @@ namespace EditSF
                 FileName = openFilename;
                 logFileWriter?.Close();
                 // 自定义检索
+#if NOT_WORKING // TODO: figure out why this is throwing exception and skipping enabling the bookmarks.
+                // At any rate this verification failure leaves the app in an indetermine state, showing "no file loaded" when it is, along with disabled bookmarks.
                 try
                 {
                     Tw3kSearch.SearchFaction(EditedFile);
@@ -350,6 +352,7 @@ namespace EditSF
                     Debug.WriteLine(e);
                     throw;
                 }
+#endif // NOT_WORKING
 
                 // 自定义换词条
 //                ChangePersonality(EditedFile, 101, CeoCategory.Personality,
@@ -517,7 +520,7 @@ namespace EditSF
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"EditSF {Application.ProductVersion} (+cpb 0.1)\nCreated by daniu\n\nmodding in progress by Crispy Bacon", "About EditSF");
+            MessageBox.Show($"EditSF {Application.ProductVersion}\nCreated by daniu\n\nmodding in progress by Crispy Bacon", "About EditSF");
         }
 
         private void Save(string filename)

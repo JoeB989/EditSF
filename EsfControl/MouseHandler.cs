@@ -38,6 +38,7 @@ namespace EsfControl
                 }
 				else if (nodeAt.Text == "FACTION_ARRAY")
 				{
+					treeView.SelectedNode = nodeAt;
 					var item = CreateMenuItem("All Factions Report ...", parentNode, AllFactionsReport);
 					contextMenuStrip.Items.Add(item);
 				}
@@ -171,31 +172,65 @@ namespace EsfControl
 
 		private void ShowFactionsReport(ParentNode[] nodes)
 		{
-			StringBuilder report = new StringBuilder();
-			string title = System.Windows.Forms.Application.OpenForms[0].Text; // hacky
+			// hack to find the root node
+			EsfNode rootNode = nodes[0];
+			while (rootNode.Parent != null)
+				rootNode = rootNode.Parent;
+
+			string title = System.Windows.Forms.Application.OpenForms[0].Text; // hack
 			int dotsave = title.IndexOf(".save", System.StringComparison.OrdinalIgnoreCase);
 			string savefile = (dotsave > 0) ? title.Substring(0, dotsave + 5) : title;
-			report.AppendFormat("Save file: {0}\n", savefile);
+
+			var saveGameHeader = findChild((ParentNode)rootNode, "SAVE_GAME_HEADER");
+			string playerFaction = ((StringNode)saveGameHeader.Values[0]).Value;
+			uint turn = ((OptimizedUIntNode)saveGameHeader.Values[2]).Value;
+			var dateNode = findChild(saveGameHeader, "DATE");
+			uint year = ((OptimizedUIntNode)dateNode.Values[0]).Value;
+			uint month = ((OptimizedUIntNode)dateNode.Values[2]).Value;	// 0-based
+			string monthName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName((int)month+1);
+			uint display_year = year - 752; // hack guess
+
+			StringBuilder report = new StringBuilder();
+			report.AppendFormat("Save file: {0}\n    Turn {1}, Year {2}, Month {3}\n    Player faction: {4}\n",
+				savefile, turn, display_year, monthName, playerFaction);
 
 			foreach (var factionNode in nodes)
 			{
-				buildFactionReport(factionNode, report);
+				buildFactionReport(factionNode, report, year, month);
 			}
 
-			var ret = MessageBox.Show(report.ToString(), "Click OK to cope report to clipboard", MessageBoxButtons.OKCancel);
+			var ret = MessageBox.Show(report.ToString(), "Click OK to copy report to clipboard", MessageBoxButtons.OKCancel);
 			if (ret == DialogResult.OK)
 			{
 				Clipboard.SetText(report.ToString());
 			}
 		}
 
-		private void buildFactionReport(ParentNode factionNode, StringBuilder report)
+		private void buildFactionReport(ParentNode factionNode, StringBuilder report, uint game_year, uint game_month)
 		{
             string factionName = ((StringNode)(factionNode.AllNodes[1])).Value;
             report.AppendFormat("Faction: {0}\n", factionName);
 
-            // find characters that have an office
-            var government = findChild(factionNode, "GOVERNMENT");
+			// find governors (all provinces and factions)
+			Dictionary<uint, string> governors = new Dictionary<uint, string>();
+			var worldNode = factionNode.Parent.Parent.Parent; // hack
+			var provinceManager = findChild((ParentNode)worldNode, "PROVINCE_MANAGER");
+			var provinceArray = provinceManager.Children[0];
+			foreach (var province in provinceArray.Children)
+			{
+				string provinceName = ((StringNode)province.Values[0]).Value;
+				var factionProvinceManager = province.Children[0];//findChild(province, "FACTION_PROVINCE_MANAGER");
+				var fpmArray = factionProvinceManager.Children[0];
+				foreach (var fpm in fpmArray.Children)
+				{
+					uint governorId = ((OptimizedUIntNode)(fpm.Children[0]).Values[6]).Value;
+					if (governorId > 0)
+						governors.Add(governorId, provinceName);
+				}
+			}
+
+			// find characters that have an office
+			var government = findChild(factionNode, "GOVERNMENT");
             var postsNode = government.Children[0];
             Dictionary<uint, string> officers = new Dictionary<uint, string>();
             foreach (var posts in postsNode.Children)
@@ -209,62 +244,117 @@ namespace EsfControl
 				}
 			}
 
+			report.AppendLine("  Characters");
             var characters = findChild(factionNode, "CHARACTER_ARRAY");
             int charIndex = 0;
             foreach (var charNode in characters.Children)
             {
                 var character = charNode.Children[0];
-                uint charId = ((OptimizedUIntNode)character.Values[0]).Value;
-                var details = findChild(character, "CHARACTER_DETAILS");
-                var traitsNode = findChild(details, "TRAITS");
-                var traitNode = traitsNode.Children[0];
-
-                var lineOfSight = findChild(character, "LINE_OF_SIGHT");
-                bool alive = ((OptimizedBoolNode) lineOfSight.Value[0]).Value;
-
-                var nameNode = findChild(details, "CHARACTER_NAME");
-                var namesBlock = nameNode.Children[0];
-                var block0 = namesBlock.Children[0];
-                var localization0 = block0.Children[0];
-
-                string name = ((StringNode)localization0.Value[0]).Value;
-				if (hardcoded_names.ContainsKey(name))
-					name = hardcoded_names[name];
-
-                string role = ((StringNode)character.Values[1]).Value;
-                string occupation = ((StringNode)details.Values[16]).Value;
-                if (string.IsNullOrWhiteSpace(occupation))
-                    occupation = "candidate";
-                string office = officers.ContainsKey(charId) ? officers[charId] : null;
-
-                var campaignSkills = findChild(details, "CAMPAIGN_SKILLS");
-                uint rank = 1 + ((OptimizedUIntNode) campaignSkills.Value[5]).Value;
-
-                if (! alive)
-				{
-                    report.AppendFormat("  [{0}] {1} (rank {2} {3}) DECEASED\n", 
-                        charIndex, name, rank, role);
-                }
-				else 
-                {
-                    report.AppendFormat("  [{0}] {1} (rank {2} {3}, {4}",
-                        charIndex, name, rank, role, occupation);
-                    if (office != null)
-					{
-                        report.AppendFormat(", {0}", office);
-					}
-                    report.AppendLine(")");
-                }
-
-                foreach (RecordEntryNode trait in traitNode.Children)
-                {
-                    report.AppendFormat("    {0} = {1}\n", trait.Values[0], trait.Values[1]);
-                }
+				reportCharacter(character, charIndex, report, game_year, game_month, officers, governors);
                 charIndex++;
             }
-        }
 
-        private ParentNode findChild(ParentNode node, string childName)
+			// candidates from CHARACTER_RECRUITMENT_POOL
+			report.AppendLine("  Candidates");
+			var recruitmentPool= findChild(factionNode, "CHARACTER_RECRUITMENT_POOL_MANAGER");
+			var poolBlock = recruitmentPool.Children[0].Children[0].Children[0].Children[0];
+			charIndex = 0;
+			foreach (var poolEntry in poolBlock.Children)
+			{
+				var character = poolEntry.Children[0];
+				reportCharacter(character, charIndex, report, game_year, game_month, officers, governors);
+				charIndex++;
+			}
+		}
+
+		private void reportCharacter(ParentNode character, int charIndex, StringBuilder report,
+			uint game_year, uint game_month, Dictionary<uint, string> officers, Dictionary<uint, string> governors)
+		{
+			uint charId = ((OptimizedUIntNode)character.Values[0]).Value;
+
+			if (character.Values.Count > 11)    // candidateas will not have all these
+			{
+				float important_value = ((OptimizedFloatNode)character.Values[11]).Value;
+				bool showCharacter = important_value > 5.5f;    // not sure why, but seems correct so far; 10 = real character, 5 = not real
+				if (!showCharacter)
+					return;
+			}
+
+			var details = findChild(character, "CHARACTER_DETAILS");
+			uint influence = ((OptimizedUIntNode)details.Values[15]).Value;
+			var traitsNode = findChild(details, "TRAITS");
+			var traitNode = traitsNode.Children[0];
+
+			var dateNodes = findChildren(details, "DATE");
+			uint birth_year = ((OptimizedUIntNode)dateNodes[0].Values[0]).Value;
+			uint birth_month = ((OptimizedUIntNode)dateNodes[0].Values[2]).Value;
+			int age = (int)game_year - (int)birth_year; // int just in case goes negative
+			if (game_month < birth_month)
+				age--;
+
+			// 2nd DATE node seems to be the date booted from army
+			uint boot_year = ((OptimizedUIntNode)dateNodes[1].Values[0]).Value;
+			bool booted = boot_year > 0;
+
+			// A booted character has no LOS but is not deceased
+			var lineOfSight = findChild(character, "LINE_OF_SIGHT");
+			bool deceased = false;
+			if (lineOfSight != null) // candidates won't have this
+			{
+				bool has_los = ((OptimizedBoolNode)lineOfSight.Value[0]).Value;
+				deceased = !has_los && !booted;
+			}
+
+			// TODO: some names aren't right in some scenarios (when names are duplicated between nobles and candidates)
+			var nameNode = findChild(details, "CHARACTER_NAME");
+			var namesBlock = nameNode.Children[0];
+			var block0 = namesBlock.Children[0];
+			var localization0 = block0.Children[0];
+			string nameKey = ((StringNode)localization0.Value[0]).Value;
+			string name;
+			if (!hardcoded_names.TryGetValue(nameKey, out name))
+				name = nameKey;
+
+			string politicalParty = null;
+			if (character.Values.Count > 1)
+				politicalParty = ((StringNode)character.Values[1]).Value;
+			else
+				politicalParty = "candidate";
+
+			string occupation = ((StringNode)details.Values[16]).Value;
+			//if (string.IsNullOrWhiteSpace(occupation))
+			//    occupation = "candidate"; // TODO: not always right (e.g. for wife)
+			string office = officers.ContainsKey(charId) ? officers[charId] : null;
+			string governorOf = null;
+			governors.TryGetValue(charId, out governorOf);
+
+			var campaignSkills = findChild(details, "CAMPAIGN_SKILLS");
+			uint rank = 1 + ((OptimizedUIntNode)campaignSkills.Value[5]).Value;
+
+			report.AppendFormat("  [{0}] {1} (rank {2} {3})", charIndex, name, rank, politicalParty);
+			report.AppendFormat(", {0}", occupation);
+			if (governorOf != null)
+				report.AppendFormat(", Governor of {0}", governorOf);
+			if (office != null)
+				report.AppendFormat(", {0}", office);
+			if (deceased)
+				report.Append(" DECEASED");
+			report.AppendLine();
+
+			// TEMP: for debugging
+			//report.AppendFormat("      Debug info: id:{0} {1}\n", charId, nameKey);
+
+			// add other stuff to help disambiguate when name is wrong
+			report.AppendFormat("      Age {0}", age);
+			report.AppendFormat("  Influence {0}\n", influence);
+
+			foreach (RecordEntryNode trait in traitNode.Children)
+			{
+				report.AppendFormat("      {0} = {1}\n", trait.Values[0], trait.Values[1]);
+			}
+		}
+
+		private ParentNode findChild(ParentNode node, string childName)
 		{
             foreach (var child in node.Children)
 			{
@@ -272,6 +362,17 @@ namespace EsfControl
                     return child;
 			}
             return null;
+		}
+
+		private ParentNode[] findChildren(ParentNode node, string childName)
+		{
+			List<ParentNode> nodes = new List<ParentNode>();
+			foreach (var child in node.Children)
+			{
+				if (child.Name == childName)
+					nodes.Add(child);
+			}
+			return nodes.ToArray();
 		}
 
 		// hack!
