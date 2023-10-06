@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using CommonDialogs;
@@ -152,25 +153,41 @@ namespace EsfControl
 			}
         }
 
-		private void OneFactionReport(EsfNode node)
+		private void OneFactionReport(EsfNode factionEntryNode)
 		{
-			ParentNode factionNode = ((ParentNode)node).Children[0];
+			ParentNode worldNode = (ParentNode)factionEntryNode.Parent.Parent;
+			ParentNode FamilyTreeNode = findChild(worldNode, "FAMILY_TREE");
+			List<FamilyMember> familyTree = ScanFamilyTree(FamilyTreeNode);
+
+			ParentNode factionNode = ((ParentNode)factionEntryNode).Children[0];
 			var nodes = new ParentNode[] { factionNode };
-			ShowFactionsReport(nodes);
+			var cfg = new ReportConfig() { EconomicReport = true, CharacterReport = false }; //TEMP
+			ShowFactionsReport(nodes, familyTree, cfg);
 		}
 
-		private void AllFactionsReport(EsfNode node)
+		private void AllFactionsReport(EsfNode factionArrayNode)
 		{
+			ParentNode worldNode = (ParentNode) factionArrayNode.Parent;
+			ParentNode FamilyTreeNode = findChild(worldNode, "FAMILY_TREE");
+			List<FamilyMember> familyTree = ScanFamilyTree(FamilyTreeNode);
+
 			List<ParentNode> factions = new List<ParentNode>();
-			foreach (ParentNode factionArrayNode in ((ParentNode)node).Children)
+			foreach (ParentNode factionEntryNode in ((ParentNode)factionArrayNode).Children)
 			{
-				ParentNode factionNode = factionArrayNode.Children[0];
+				ParentNode factionNode = factionEntryNode.Children[0];
 				factions.Add(factionNode);
 			}
-			ShowFactionsReport(factions.ToArray());
+			var cfg = new ReportConfig() { EconomicReport = true, CharacterReport = false }; //TEMP
+			ShowFactionsReport(factions.ToArray(), familyTree, cfg);
 		}
 
-		private void ShowFactionsReport(ParentNode[] nodes)
+		private struct ReportConfig
+		{
+			public bool EconomicReport;
+			public bool CharacterReport;
+		}
+
+		private void ShowFactionsReport(ParentNode[] nodes, List<FamilyMember> familyTree, ReportConfig cfg)
 		{
 			// hack to find the root node
 			EsfNode rootNode = nodes[0];
@@ -196,7 +213,7 @@ namespace EsfControl
 
 			foreach (var factionNode in nodes)
 			{
-				buildFactionReport(factionNode, report, year, month);
+				buildFactionReport(factionNode, report, year, month, familyTree, cfg);
 			}
 
 			var ret = MessageBox.Show(report.ToString(), "Click OK to copy report to clipboard", MessageBoxButtons.OKCancel);
@@ -206,11 +223,70 @@ namespace EsfControl
 			}
 		}
 
-		private void buildFactionReport(ParentNode factionNode, StringBuilder report, uint game_year, uint game_month)
+		private void buildFactionReport(ParentNode factionNode, StringBuilder report,
+			uint game_year, uint game_month, List<FamilyMember> familyTree, ReportConfig cfg)
 		{
             string factionName = ((StringNode)(factionNode.AllNodes[1])).Value;
-            report.AppendFormat("Faction: {0}\n", factionName);
+			report.AppendFormat("Faction: {0}\n", factionName);
 
+			if (cfg.EconomicReport)
+				EconomicReport(factionNode, report);
+
+			if (cfg.CharacterReport)
+				CharacterReport(factionNode, report, game_year, game_month, familyTree);
+		}
+
+		private void EconomicReport(ParentNode factionNode, StringBuilder report)
+		{
+			var economics = findChild(factionNode, "FACTION_ECONOMICS");
+			int treasury = ((OptimizedIntNode)economics.Values[0]).Value;
+			report.AppendLine("  Economics:");
+			report.AppendFormat("    Treasury: {0:#,#}\n", treasury);
+
+			var history = economics.Children[0];
+			int index = history.Children.Count - 1;
+			if (index >= 0)
+			{
+				var econData = history.Children[index].Children[0];
+				report.AppendLine("    Projected this turn:");
+				reportEconData(econData, report);
+
+				if (index >= 1)
+				{
+					var priorData = history.Children[index - 1].Children[0];
+					report.AppendLine("    Last turn:");
+					reportEconData(priorData, report);
+				}
+			}
+		}
+
+		private void reportEconData(ParentNode econData, StringBuilder report)
+		{
+			var array1 = ((OptimizedArrayNode<int>)econData.Values[1]).Value;
+			var array2 = ((OptimizedArrayNode<int>)econData.Values[2]).Value;
+			var array5 = ((OptimizedArrayNode<int>)econData.Values[5]).Value;
+
+			int taxes = (int)array1.GetValue(0);
+			int slavery = (int)array1.GetValue(1);
+			int trade = (int)array1.GetValue(2);
+			int otherIncome = (int)array2.GetValue(4);
+			int maint = -(int)array5.GetValue(8);
+			int armyUpkeep = -(int)array5.GetValue(1);
+			int navyUpkeep = -(int)array5.GetValue(2); // TODO: guess, figure out
+			int otherExpense = 0; // TODO: figure out
+			int totalIncome = taxes + slavery + trade + otherIncome;
+			int totalExpense = armyUpkeep + navyUpkeep + maint + otherExpense;
+			report.AppendFormat("      Taxes            {0,10:#,#}   Army Upkeep {1,10:#,#}\n", taxes, armyUpkeep);
+			report.AppendFormat("      Slave population {0,10:#,#}   Navy Upkeep {1,10:#,#}\n", slavery, navyUpkeep);
+			report.AppendFormat("      Trade            {0,10:#,#}   Maintenance {1,10:#,#}\n", trade, maint);
+			report.AppendFormat("      Other            {0,10:#,#}   Other       {1,10:#,#}\n", otherIncome, otherExpense);
+			report.AppendLine  ("                       ----------               ----------");
+			report.AppendFormat("                       {0,10:#,#}               {1,10:#,#}    = {2:#,#}\n", totalIncome, totalExpense, totalIncome + totalExpense);
+		}
+
+		private void CharacterReport(ParentNode factionNode, StringBuilder report,
+			uint game_year, uint game_month, List<FamilyMember> familyTree)
+		{
 			// find governors (all provinces and factions)
 			Dictionary<uint, string> governors = new Dictionary<uint, string>();
 			var worldNode = factionNode.Parent.Parent.Parent; // hack
@@ -231,48 +307,58 @@ namespace EsfControl
 
 			// find characters that have an office
 			var government = findChild(factionNode, "GOVERNMENT");
-            var postsNode = government.Children[0];
-            Dictionary<uint, string> officers = new Dictionary<uint, string>();
-            foreach (var posts in postsNode.Children)
+			var postsNode = government.Children[0];
+			Dictionary<uint, string> officers = new Dictionary<uint, string>();
+			foreach (var posts in postsNode.Children)
 			{
-                foreach (var post in posts.Children)
+				foreach (var post in posts.Children)
 				{
-                    string postName = ((StringNode)(post.Value[1])).Value;
-                    uint charId = ((OptimizedUIntNode)(post.Value[2])).Value;
-                    if (charId > 0)
-                        officers.Add(charId, postName);
+					string postName = ((StringNode)(post.Value[1])).Value;
+					uint charId = ((OptimizedUIntNode)(post.Value[2])).Value;
+					if (charId > 0)
+						officers.Add(charId, postName);
 				}
 			}
 
+			// TODO: find characters that have a spouse
+			string factionName = ((StringNode)(factionNode.AllNodes[1])).Value;
+			var factionFamily = from member in familyTree
+								where member.Faction == factionName
+								select member;
+
 			report.AppendLine("  Characters");
-            var characters = findChild(factionNode, "CHARACTER_ARRAY");
-            int charIndex = 0;
-            foreach (var charNode in characters.Children)
-            {
-                var character = charNode.Children[0];
-				reportCharacter(character, charIndex, report, game_year, game_month, officers, governors);
-                charIndex++;
-            }
+			var characters = findChild(factionNode, "CHARACTER_ARRAY");
+			int charIndex = 0;
+			foreach (var charNode in characters.Children)
+			{
+				var character = charNode.Children[0];
+				reportCharacter(character, charIndex, report,
+					game_year, game_month, officers, governors, factionFamily);
+				charIndex++;
+			}
 
 			// candidates from CHARACTER_RECRUITMENT_POOL
 			report.AppendLine("  Candidates");
-			var recruitmentPool= findChild(factionNode, "CHARACTER_RECRUITMENT_POOL_MANAGER");
+			var recruitmentPool = findChild(factionNode, "CHARACTER_RECRUITMENT_POOL_MANAGER");
 			var poolBlock = recruitmentPool.Children[0].Children[0].Children[0].Children[0];
 			charIndex = 0;
 			foreach (var poolEntry in poolBlock.Children)
 			{
 				var character = poolEntry.Children[0];
-				reportCharacter(character, charIndex, report, game_year, game_month, officers, governors);
+				reportCharacter(character, charIndex, report,
+					game_year, game_month, officers, governors, factionFamily);
 				charIndex++;
 			}
 		}
 
 		private void reportCharacter(ParentNode character, int charIndex, StringBuilder report,
-			uint game_year, uint game_month, Dictionary<uint, string> officers, Dictionary<uint, string> governors)
+			uint game_year, uint game_month,
+			Dictionary<uint, string> officers, Dictionary<uint, string> governors,
+			IEnumerable<FamilyMember> factionFamily)
 		{
 			uint charId = ((OptimizedUIntNode)character.Values[0]).Value;
 
-			if (character.Values.Count > 11)    // candidateas will not have all these
+			if (character.Values.Count > 11)    // candidates will not have all these
 			{
 				float important_value = ((OptimizedFloatNode)character.Values[11]).Value;
 				bool showCharacter = important_value > 5.5f;    // not sure why, but seems correct so far; 10 = real character, 5 = not real
@@ -285,12 +371,23 @@ namespace EsfControl
 			var traitsNode = findChild(details, "TRAITS");
 			var traitNode = traitsNode.Children[0];
 
+			//uint NOT_sex_enum = ((OptimizedUIntNode)details.Values[4]).Value;
+			//string NOT_sex;
+			//switch (NOT_sex_enum)
+			//{
+			//	case 0: NOT_sex = "deceased"; break;
+			//	case 1: NOT_sex = "male"; break;
+			//	case 2: NOT_sex = "female"; break;
+			//	default: NOT_sex = string.Format("sex={0}", NOT_sex_enum); break;
+			//}
+
 			var dateNodes = findChildren(details, "DATE");
 			uint birth_year = ((OptimizedUIntNode)dateNodes[0].Values[0]).Value;
 			uint birth_month = ((OptimizedUIntNode)dateNodes[0].Values[2]).Value;
-			int age = (int)game_year - (int)birth_year; // int just in case goes negative
-			if (game_month < birth_month)
-				age--;
+			int age = computeAge(birth_year, birth_month, game_year, game_month);
+			//int age = (int)game_year - (int)birth_year; // int just in case goes negative
+			//if (game_month < birth_month)
+			//	age--;
 
 			// 2nd DATE node seems to be the date booted from army
 			uint boot_year = ((OptimizedUIntNode)dateNodes[1].Values[0]).Value;
@@ -305,12 +402,14 @@ namespace EsfControl
 				deceased = !has_los && !booted;
 			}
 
-			// TODO: some names aren't right in some scenarios (when names are duplicated between nobles and candidates)
-			var nameNode = findChild(details, "CHARACTER_NAME");
-			var namesBlock = nameNode.Children[0];
-			var block0 = namesBlock.Children[0];
-			var localization0 = block0.Children[0];
-			string nameKey = ((StringNode)localization0.Value[0]).Value;
+			string nameKey = readNameKey(details);
+			var familyMember = (from member in factionFamily
+								where member.NameKey == nameKey
+								select member).FirstOrDefault();
+			if (familyMember != null)
+			{
+				;
+			}
 			string name;
 			if (!hardcoded_names.TryGetValue(nameKey, out name))
 				name = nameKey;
@@ -331,7 +430,7 @@ namespace EsfControl
 			var campaignSkills = findChild(details, "CAMPAIGN_SKILLS");
 			uint rank = 1 + ((OptimizedUIntNode)campaignSkills.Value[5]).Value;
 
-			report.AppendFormat("  [{0}] {1} (rank {2} {3})", charIndex, name, rank, politicalParty);
+			report.AppendFormat("  [{0}] {1} id:{2} (rank {3} {4})", charIndex, name, charId, rank, politicalParty);
 			report.AppendFormat(", {0}", occupation);
 			if (governorOf != null)
 				report.AppendFormat(", Governor of {0}", governorOf);
@@ -345,8 +444,7 @@ namespace EsfControl
 			//report.AppendFormat("      Debug info: id:{0} {1}\n", charId, nameKey);
 
 			// add other stuff to help disambiguate when name is wrong
-			report.AppendFormat("      Age {0}", age);
-			report.AppendFormat("  Influence {0}\n", influence);
+			report.AppendFormat("      Age {0}  Influence {1}\n", age, influence);
 
 			foreach (RecordEntryNode trait in traitNode.Children)
 			{
@@ -354,7 +452,25 @@ namespace EsfControl
 			}
 		}
 
-		private ParentNode findChild(ParentNode node, string childName)
+		static private string readNameKey(ParentNode detailsNode)
+		{
+			var nameNode = findChild(detailsNode, "CHARACTER_NAME");
+			var namesBlock = nameNode.Children[0];
+			var block0 = namesBlock.Children[0];
+			var localization0 = block0.Children[0];
+			string nameKey = ((StringNode)localization0.Value[0]).Value;
+			return nameKey;
+		}
+
+		static private int computeAge(uint birth_year, uint birth_month, uint game_year, uint game_month)
+		{
+			int age = (int)game_year - (int)birth_year; // int just in case goes negative
+			if (game_month < birth_month)
+				age--;
+			return age;
+		}
+
+		static private ParentNode findChild(ParentNode node, string childName)
 		{
             foreach (var child in node.Children)
 			{
@@ -373,6 +489,55 @@ namespace EsfControl
 					nodes.Add(child);
 			}
 			return nodes.ToArray();
+		}
+
+		[System.Diagnostics.DebuggerDisplay("{Name}")]
+		private class FamilyMember
+		{
+			public uint MemberId;
+			public string Faction;
+			public string NameKey;
+			public string Name;
+			public uint CharId;
+			//public string Name;
+			public uint BirthYear;
+			public uint BirthMonth;
+			//public int Age;
+			public ParentNode raw;
+		}
+
+		private List<FamilyMember> ScanFamilyTree (ParentNode FamilyTreeNode)
+		{
+			List<FamilyMember> familyTree = new List<FamilyMember>();
+#if NOT_READY
+			foreach (ParentNode memberNode in FamilyTreeNode.Children)
+			{
+				bool realPerson = ((OptimizedBoolNode)memberNode.Values[1]).Value;
+				if (realPerson)
+				{
+					// all factions, in case we cross-married
+					FamilyMember member = new FamilyMember();
+					member.raw = memberNode;
+					member.MemberId = ((OptimizedUIntNode)memberNode.Values[0]).Value;
+					member.Faction = ((StringNode)memberNode.Values[2]).Value;
+
+					var detailsNode = findChild(memberNode, "CHARACTER_DETAILS");
+					member.CharId = ((OptimizedUIntNode)detailsNode.Values[15]).Value;
+					member.NameKey = readNameKey(detailsNode);
+					// somne have empty name key - should we reject those?
+					if (string.IsNullOrEmpty(member.NameKey))
+						continue;
+					hardcoded_names.TryGetValue(member.NameKey, out member.Name);
+
+					var dateNode = findChild(memberNode, "DATE");
+					member.BirthYear = ((OptimizedUIntNode)dateNode.Values[0]).Value;
+					member.BirthMonth = ((OptimizedUIntNode)dateNode.Values[2]).Value;
+
+					familyTree.Add(member);
+				}
+			}
+#endif // NOT_READY
+			return familyTree;
 		}
 
 		// hack!
